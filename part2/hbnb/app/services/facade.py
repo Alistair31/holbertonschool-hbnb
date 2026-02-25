@@ -25,13 +25,6 @@ class HBnBFacade:
         if not user:
             return None
 
-        if 'first_name' in user_data:
-            user.first_name = user_data['first_name']
-        if 'last_name' in user_data:
-            user.last_name = user_data['last_name']
-        if 'email' in user_data:
-            user.email = user_data['email']
-
-        self.user_repo.update(user_id, user)
+        self.user_repo.update(user_id, user_data)
 
         return user
