@@ -1,11 +1,11 @@
-from base_models import BaseModel
+from app.models.base_models import BaseModel
 import validators
 import json
 
 
 class User(BaseModel):
     def __init__(self, first_name: str, last_name: str,
-                 email: str, password: str, is_admin: bool):
+                 email: str, password=None, is_admin=False):
         super().__init__()
 
         if isinstance(first_name, str) is False:
@@ -14,9 +14,9 @@ class User(BaseModel):
             raise TypeError("Must be a string type entry.")
         if isinstance(email, str) is False:
             raise TypeError("Must be a string type entry.")
-        if isinstance(password, str) is False:
+        if password is not None and isinstance(password, str) is False:
             raise TypeError("Must be a string type entry.")
-        if len(first_name) > 50 or len(last_name) > 50 or len(password) > 50:
+        if len(first_name) > 50 or len(last_name) > 50:
             raise ValueError("Oversized text, must be 50 character max.")
         if isinstance(is_admin, bool) is False:
             raise TypeError("Must be True or False")
