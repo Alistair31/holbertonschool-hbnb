@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_restx import Api
+from .api.v1.users import api as users_ns
 
 
 def create_app():
@@ -8,7 +9,7 @@ def create_app():
               description='HBnB Application API', doc='/api/v1/')
 
     # Placeholder for API namespaces (endpoints will be added later)
-    # Additional namespaces for places, reviews,
-    # and amenities will be added later
-
+    # Additional namespaces for places,
+    # reviews, and amenities will be added later
+    api.add_namespace(users_ns, path='/api/v1/users')
     return app
