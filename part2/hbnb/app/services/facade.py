@@ -53,3 +53,35 @@ class HBnBFacade:
         # logic to retrieve an amenity by name
         all_amenities = self.amenity_repo.get_all()
         return next((a for a in all_amenities if a.name == name), None)
+
+    def create_place(self, place_data):
+        from app.models.place import Place
+
+        owner_id = place_data.pop('owner_id', None)
+        amenity_ids = place_data.pop('amenities', [])
+
+        place_data['owner'] = owner_id
+
+        new_place = Place(**place_data)
+
+        for a_id in amenity_ids:
+            amenity = self.get_amenity(a_id)
+            if amenity:
+                new_place.add_amenity(amenity)
+
+        self.place_repo.add(new_place)
+        return new_place
+
+    def get_place(self, place_id):
+        return self.place_repo.get(place_id)
+
+    def get_place_by_title(self, title):
+        all_places = self.place_repo.get_all()
+        return next((p for p in all_places if p.title == title), None)
+
+    def get_all_places(self):
+        return self.place_repo.get_all()
+
+    def update_place(self, place_id, place_data):
+        self.place_repo.update(place_id, place_data)
+        return self.place_repo.get(place_id)
