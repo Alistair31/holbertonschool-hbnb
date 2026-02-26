@@ -54,17 +54,61 @@ class HBnBFacade:
         all_amenities = self.amenity_repo.get_all()
         return next((a for a in all_amenities if a.name == name), None)
 
+    def create_place(self, place_data):
+        from app.models.place import Place
+
+        owner_id = place_data.pop('owner_id', None)
+        amenity_ids = place_data.pop('amenities', [])
+
+        place_data['owner'] = owner_id
+
+        new_place = Place(**place_data)
+
+        for a_id in amenity_ids:
+            amenity = self.get_amenity(a_id)
+            if amenity:
+                new_place.add_amenity(amenity)
+
+        self.place_repo.add(new_place)
+        return new_place
+
+    def get_place(self, place_id):
+        return self.place_repo.get(place_id)
+
+    def get_place_by_title(self, title):
+        all_places = self.place_repo.get_all()
+        return next((p for p in all_places if p.title == title), None)
+
+    def get_all_places(self):
+        return self.place_repo.get_all()
+
+    def update_place(self, place_id, place_data):
+        self.place_repo.update(place_id, place_data)
+        return self.place_repo.get(place_id)
+
     def create_review(self, review_data):
-        # logic to create a review
         from app.models.review import Review
 
-        if not self.get_place(review_data.get('place_id')):
+        user_id = review_data.get('user_id')
+        place_id = review_data.get('place_id')
+
+        user_obj = self.get_user(user_id)
+        place_obj = self.get_place(place_id)
+
+        if not user_obj:
+            raise ValueError("User not found")
+        if not place_obj:
             raise ValueError("Place not found")
 
-        if not self.get_user(review_data.get('user_id')):
-            raise ValueError("User not found")
+        review_params = {
+            "text": review_data.get('text'),
+            "rating": review_data.get('rating'),
+            "user_id": user_obj,
+            "place_id": place_obj
+        }
 
-        new_review = Review(**review_data)
+        new_review = Review(**review_params)
+
         self.review_repo.add(new_review)
         return new_review
 
@@ -79,7 +123,8 @@ class HBnBFacade:
     def get_reviews_by_place(self, place_id):
         # logic to retrieve all reviews for a specific place
         all_reviews = self.get_all_reviews()
-        return [review for review in all_reviews if review.place_id == place_id]
+        return [review for review in all_reviews
+                if review.place_id == place_id]
 
     def update_review(self, review_id, review_data):
         # logic to update a review

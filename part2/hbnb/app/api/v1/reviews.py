@@ -1,15 +1,21 @@
 from flask_restx import Namespace, Resource, fields
+from app.models.place import Place
 from app.services import facade
 
 api = Namespace('reviews', description='Review operations')
 
 # Define the review model for input validation and documentation
 review_model = api.model('Review', {
-    'text': fields.String(required=True, description='Text of the review'),
-    'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
-    'user_id': fields.String(required=True, description='ID of the user'),
-    'place_id': fields.String(required=True, description='ID of the place')
+    'text': fields.String(required=True,
+                          description='Text of the review'),
+    'rating': fields.Integer(required=True,
+                             description='Rating of the place (1-5)'),
+    'user_id': fields.String(required=True,
+                             description='ID of the user'),
+    'place_id': fields.String(required=True,
+                              description='ID of the place')
 })
+
 
 @api.route('/')
 class ReviewList(Resource):
@@ -21,16 +27,14 @@ class ReviewList(Resource):
         review_data = api.payload
         try:
             new_review = facade.create_review(review_data)
-            # On retourne l'objet créé sous forme de dictionnaire
             return {
                 'id': new_review.id,
                 'text': new_review.text,
                 'rating': new_review.rating,
-                'user_id': new_review.user_id,
-                'place_id': new_review.place_id
+                'user_id': new_review.user.id,
+                'place_id': new_review.place.id
             }, 201
         except ValueError as e:
-            # api.abort renvoie directement le code erreur et le message
             api.abort(400, str(e))
 
     @api.response(200, 'List of reviews retrieved successfully')
@@ -38,10 +42,13 @@ class ReviewList(Resource):
         """Retrieve a list of all reviews"""
         reviews = facade.get_all_reviews()
         return [{
-            'id': r.id, 
-            'text': r.text, 
-            'rating': r.rating
+            'id': r.id,
+            'text': r.text,
+            'rating': r.rating,
+            'user_id': r.user.id,
+            'place_id': r.place.id
         } for r in reviews], 200
+
 
 @api.route('/<review_id>')
 class ReviewResource(Resource):
@@ -56,8 +63,8 @@ class ReviewResource(Resource):
             'id': review.id,
             'text': review.text,
             'rating': review.rating,
-            'user_id': review.user_id,
-            'place_id': review.place_id
+            'user_id': review.user.id,
+            'place_id': review.place.id
         }, 200
 
     @api.expect(review_model)

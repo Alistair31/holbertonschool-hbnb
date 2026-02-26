@@ -5,6 +5,20 @@ class Place(BaseModel):
     def __init__(self, title: str, description: str, price: float,
                  latitude: float, longitude: float, owner: str):
         super().__init__()
+
+        if not isinstance(title, str):
+            raise ValueError("Title must be a string")
+        if not isinstance(description, str):
+            raise ValueError("Description must be a string")
+        if not isinstance(price, (int, float)):
+            raise ValueError("Price must be a number")
+        if not isinstance(latitude, (int, float)):
+            raise ValueError("Latitude must be a number")
+        if not isinstance(longitude, (int, float)):
+            raise ValueError("Longitude must be a number")
+        if not isinstance(owner, str):
+            raise ValueError("Owner must be a string")
+
         self.title: str = title
         self.description: str = description
         self.price: float = price
