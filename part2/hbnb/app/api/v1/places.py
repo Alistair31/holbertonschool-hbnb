@@ -80,7 +80,7 @@ class PlaceResource(Resource):
         return {'id': place.id, 'title': place.title,
                 'description': place.description, 'price': place.price,
                 'latitude': place.latitude, 'longitude': place.longitude,
-                'owner_id': place.owner_id, 'amenities': place.amenities}, 200
+                'owner_id': place.owner, 'amenities': place.amenities}, 200
 
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
@@ -98,5 +98,5 @@ class PlaceResource(Resource):
                 updated_place.price,
                 'latitude': updated_place.latitude, 'longitude':
                 updated_place.longitude,
-                'owner_id': updated_place.owner_id, 'amenities':
+                'owner_id': updated_place.owner, 'amenities':
                 updated_place.amenities}, 200

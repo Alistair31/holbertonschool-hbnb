@@ -87,16 +87,28 @@ class HBnBFacade:
         return self.place_repo.get(place_id)
 
     def create_review(self, review_data):
-        # logic to create a review
         from app.models.review import Review
 
-        if not self.get_place(review_data.get('place_id')):
+        user_id = review_data.get('user_id')
+        place_id = review_data.get('place_id')
+
+        user_obj = self.get_user(user_id)
+        place_obj = self.get_place(place_id)
+
+        if not user_obj:
+            raise ValueError("User not found")
+        if not place_obj:
             raise ValueError("Place not found")
 
-        if not self.get_user(review_data.get('user_id')):
-            raise ValueError("User not found")
+        review_params = {
+            "text": review_data.get('text'),
+            "rating": review_data.get('rating'),
+            "user_id": user_obj,
+            "place_id": place_obj
+        }
 
-        new_review = Review(**review_data)
+        new_review = Review(**review_params)
+
         self.review_repo.add(new_review)
         return new_review
 
