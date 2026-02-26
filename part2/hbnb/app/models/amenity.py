@@ -7,8 +7,8 @@ class Amenity(BaseModel):
 
         if not isinstance(name, str) or not name.strip():
             raise ValueError("Name must be a non-empty string")
-        if description is not None and(not isinstance(description, str)
-        or not description.strip()):
+        if description is not None and (not isinstance(description, str)
+                                        or not description.strip()):
             raise ValueError("Description must be a non-empty string")
 
         self.name: str = name
