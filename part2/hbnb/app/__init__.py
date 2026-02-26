@@ -15,4 +15,5 @@ def create_app():
     # reviews, and amenities will be added later
     api.add_namespace(users_ns, path='/api/v1/users')
     api.add_namespace(amenities_ns, path='/api/v1/amenities')
+    api.add_namespace(reviews_ns, path='/api/v1/reviews')
     return app
