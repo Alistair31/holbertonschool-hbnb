@@ -96,16 +96,14 @@ class PlaceResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
         try:
-            # 1. On récupère les données
+
             place_data = api.payload
 
-            # 2. On demande à la facade de faire la mise à jour
             updated_place = facade.update_place(place_id, place_data)
 
             if not updated_place:
                 api.abort(404, "Place not found")
 
-            # 3. On construit la réponse
             return {
                 'id': updated_place.id,
                 'title': updated_place.title,

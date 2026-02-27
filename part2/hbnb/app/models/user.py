@@ -54,3 +54,19 @@ class User(BaseModel):
         if not User.is_valid_email(email):
             return False, "Wrong format for email address"
         return User.is_email_unique(db_path, email), "Email ok"
+
+    def update_user(self, user_id, user_data):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return None
+
+        for key, value in user_data.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+
+        if hasattr(user, 'validate'):
+            user.validate()
+
+        self.user_repo.update(user_id, user_data)
+
+        return user
