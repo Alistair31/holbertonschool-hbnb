@@ -2,18 +2,20 @@ from flask_restx import Namespace, Resource, fields
 from app.models.place import Place
 from app.services import facade
 
+
 api = Namespace('reviews', description='Review operations')
 
-# Define the review model for input validation and documentation
+
 review_model = api.model('Review', {
-    'text': fields.String(required=True,
-                          description='Text of the review'),
-    'rating': fields.Integer(required=True,
-                             description='Rating of the place (1-5)'),
-    'user_id': fields.String(required=True,
-                             description='ID of the user'),
-    'place_id': fields.String(required=True,
-                              description='ID of the place')
+    'text': fields.String(required=True, description='Text of the review'),
+    'rating': fields.Integer(required=True, description='Rating (1-5)'),
+    'user_id': fields.String(required=True, description='ID of the user'),
+    'place_id': fields.String(required=True, description='ID of the place')
+})
+
+review_update_model = api.model('ReviewUpdate', {
+    'text': fields.String(description='Updated text of the review'),
+    'rating': fields.Integer(description='Updated rating (1-5)')
 })
 
 
@@ -67,7 +69,7 @@ class ReviewResource(Resource):
             'place_id': review.place.id
         }, 200
 
-    @api.expect(review_model)
+    @api.expect(review_update_model)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     def put(self, review_id):
