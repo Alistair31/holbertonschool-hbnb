@@ -39,23 +39,27 @@ class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
-    @api.response(201, 'Place successfully created')
     def post(self):
         """Register a new place"""
+        place_data = api.payload
 
-        new_place = facade.create_place(api.payload)
+        try:
+            new_place = facade.create_place(place_data)
 
-        return {
-            'id': new_place.id,
-            'title': new_place.title,
-            'description': new_place.description,
-            'price': new_place.price,
-            'latitude': new_place.latitude,
-            'longitude': new_place.longitude,
-            'owner_id': new_place.owner,
-            'amenities': [{'id': a.id, 'name': a.name}
-                          for a in new_place.amenities]
-        }, 201
+            return {
+                'id': new_place.id,
+                'title': new_place.title,
+                'description': new_place.description,
+                'price': new_place.price,
+                'latitude': new_place.latitude,
+                'longitude': new_place.longitude,
+                'owner_id': new_place.owner.id
+                if hasattr(new_place.owner, 'id') else new_place.owner,
+                'amenities': [a.id for a in new_place.amenities]
+            }, 201
+
+        except (ValueError, TypeError) as e:
+            api.abort(400, str(e))
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
@@ -64,7 +68,9 @@ class PlaceList(Resource):
         return [{'id': place.id, 'title': place.title,
                  'description': place.description, 'price': place.price,
                  'latitude': place.latitude, 'longitude': place.longitude,
-                 'owner_id': place.owner, 'amenities': place.amenities}
+                 'owner_id': place.owner.id
+                 if hasattr(place.owner, 'id') else place.owner,
+                 'amenities': [a.id for a in place.amenities]}
                 for place in places], 200
 
 
@@ -80,23 +86,38 @@ class PlaceResource(Resource):
         return {'id': place.id, 'title': place.title,
                 'description': place.description, 'price': place.price,
                 'latitude': place.latitude, 'longitude': place.longitude,
-                'owner_id': place.owner, 'amenities': place.amenities}, 200
+                'owner_id': place.owner.id
+                if hasattr(place.owner, 'id') else place.owner,
+                'amenities': [a.id for a in place.amenities]}, 200
 
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
-        """Update a place's information"""
-        place = facade.get_place(place_id)
-        if not place:
-            return {'error': 'Place not found'}, 404
+        try:
+            # 1. On récupère les données
+            place_data = api.payload
 
-        updated_place = facade.update_place(place_id, api.payload)
-        return {'id': updated_place.id, 'title': updated_place.title,
-                'description': updated_place.description, 'price':
-                updated_place.price,
-                'latitude': updated_place.latitude, 'longitude':
-                updated_place.longitude,
-                'owner_id': updated_place.owner, 'amenities':
-                updated_place.amenities}, 200
+            # 2. On demande à la facade de faire la mise à jour
+            updated_place = facade.update_place(place_id, place_data)
+
+            if not updated_place:
+                api.abort(404, "Place not found")
+
+            # 3. On construit la réponse
+            return {
+                'id': updated_place.id,
+                'title': updated_place.title,
+                'description': updated_place.description,
+                'price': updated_place.price,
+                'latitude': updated_place.latitude,
+                'longitude': updated_place.longitude,
+                'owner_id': updated_place.owner.id
+                if hasattr(updated_place.owner, 'id') else updated_place.owner,
+                'amenities': [a.id if hasattr(a, 'id')
+                              else a for a in updated_place.amenities]
+            }, 200
+
+        except (ValueError, TypeError) as e:
+            api.abort(400, str(e))

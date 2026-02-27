@@ -10,9 +10,13 @@ class HBnBFacade:
         self.amenity_repo = InMemoryRepository()
 
     def create_user(self, user_data):
-        user = User(**user_data)
-        self.user_repo.add(user)
-        return user
+        existing_user = self.user_repo.get_by_attribute('email',
+                                                        user_data['email'])
+        if existing_user:
+            raise ValueError("Email already exists")
+        new_user = User(**user_data)
+        self.user_repo.add(new_user)
+        return new_user
 
     def get_user(self, user_id):
         return self.user_repo.get(user_id)
