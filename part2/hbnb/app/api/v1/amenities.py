@@ -13,19 +13,26 @@ amenity_model = api.model('Amenity', {
 class AmenityList(Resource):
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
-    @api.response(400, 'Amenity already registered')
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new amenity"""
         amenity_data = api.payload
-
-        existing_amenity = facade.get_amenity_by_name(amenity_data['name'])
+        
+        existing_amenity = facade.get_amenity_by_name(amenity_data.get('name'))
         if existing_amenity:
             return {'error': 'Amenity already registered'}, 400
 
-        new_amenity = facade.create_amenity(amenity_data)
-        return {'id': new_amenity.id, 'name': new_amenity.name}, 201
+        try:
+            new_amenity = facade.create_amenity(amenity_data)
+            return {'id': new_amenity.id, 'name': new_amenity.name}, 201
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
+    @api.response(200, 'List of amenities retrieved successfully')
+    def get(self):
+        """Retrieve a list of all amenities"""
+        amenities = facade.get_all_amenities()
+        return [{'id': amenity.id, 'name': amenity.name} for amenity in amenities], 200
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
         """Retrieve a list of all amenities"""
@@ -51,12 +58,12 @@ class AmenityResource(Resource):
     def put(self, amenity_id):
         """Update amenity details"""
         amenity_data = api.payload
-        amenity = facade.get_amenity(amenity_id)
-        if not amenity:
+        updated_amenity = facade.update_amenity(amenity_id, amenity_data)
+        if not updated_amenity:
             return {'error': 'Amenity not found'}, 404
 
-        updated_amenity = facade.update_amenity(amenity_id, amenity_data)
         return {
+            'message': 'Amenity updated successfully',
             'id': updated_amenity.id,
             'name': updated_amenity.name
         }, 200
