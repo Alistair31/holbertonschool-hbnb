@@ -1,0 +1,4 @@
+part2/hbnb/.venv/lib64
+venv
+*pyc
+.gitignore
