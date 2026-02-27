@@ -1,11 +1,29 @@
-Test reviews Case,Method,Description,Expected,Actual,Status
+Module,Test Case,Expected,Actual,Status
 
-test_create_review_flow,POST/GET/PUT/DELETE,"Full lifecycle: Create, Retrieve, Update, and Delete a review.",201/200,201/200,PASS ✅
-test_create_review_invalid_rating,POST,Negative test: Submit a rating of 10 (valid range is 1-5).,400,400,PASS ✅
-test_create_review_missing_data,POST,Negative test: Submit review without required fields (text/place_id).,400,400,PASS ✅
-test_get_non_existent_review,GET,Retrieve a review using a non-existent ID.,404,404,PASS ✅
+Amenities
+,test_create_amenity,201,201,PASS ✅
+,test_create_invalid_amenity,400,400,PASS ✅
+,test_get_all_amenities,200,200,PASS ✅
+,test_update_amenity,200,200,PASS ✅
 
+Reviews
+,test_create_review_flow,201/200,201/200,PASS ✅
+,test_create_review_invalid_rating,400,400,PASS ✅
+,test_create_review_missing_data,400,400,PASS ✅
+,test_get_non_existent_review,404,404,PASS ✅
 
-Module,Total Tests,Status,Key Validations
-Reviews,4,PASS ✅,"CRUD flow, Rating limits (1-5), Missing fields, 404 handling."
-Amenities,4,PASS ✅,"Valid creation, Empty name rejection, Update messages, List retrieval."
+Users
+,test_create_user_success,201,201,PASS ✅
+,test_create_user_duplicate_email,400,400,PASS ✅
+,test_create_user_missing_fields,400,400,PASS ✅
+,test_get_user_by_id,200,200,PASS ✅
+,test_update_user,200,200,PASS ✅
+,test_get_non_existent_user,404,404,PASS ✅
+
+Places
+,test_place_amenities_relation,201,201,PASS ✅
+,test_place_immutability_and_validation,200,200,PASS ✅
+,test_place_invalid_coordinates,400,400,PASS ✅
+,test_place_update_invalid_price,400,400,PASS ✅
+,test_get_non_existent_place,404,404,PASS ✅
+,test_update_non_existent_place,404,404,PASS ✅
