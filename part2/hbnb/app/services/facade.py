@@ -89,26 +89,24 @@ class HBnBFacade:
     def create_review(self, review_data):
         from app.models.review import Review
 
-        user_id = review_data.get('user_id')
-        place_id = review_data.get('place_id')
-
-        user_obj = self.get_user(user_id)
-        place_obj = self.get_place(place_id)
+        # 1. On récupère les OBJETS (instances)
+        user_obj = self.get_user(review_data.get('user_id'))
+        place_obj = self.get_place(review_data.get('place_id'))
 
         if not user_obj:
             raise ValueError("User not found")
         if not place_obj:
             raise ValueError("Place not found")
 
-        review_params = {
-            "text": review_data.get('text'),
-            "rating": review_data.get('rating'),
-            "user_id": user_obj,
-            "place_id": place_obj
-        }
+        # 2. On crée la review proprement
+        new_review = Review(
+            text=review_data.get('text'),
+            rating=review_data.get('rating'),
+            place_id=place_obj, # On envoie l'objet Place (attendu par ton modèle)
+            user_id=user_obj    # On envoie l'objet User (attendu par ton modèle)
+        )
 
-        new_review = Review(**review_params)
-
+        # 3. On enregistre et on retourne
         self.review_repo.add(new_review)
         return new_review
 
@@ -121,10 +119,9 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        # logic to retrieve all reviews for a specific place
         all_reviews = self.get_all_reviews()
-        return [review for review in all_reviews
-                if review.place_id == place_id]
+        # On compare l'ID de l'objet place stocké avec l'ID reçu
+        return [r for r in all_reviews if r.place.id == place_id]
 
     def update_review(self, review_id, review_data):
         # logic to update a review
