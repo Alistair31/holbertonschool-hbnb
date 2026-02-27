@@ -9,8 +9,12 @@ class Review(BaseModel):
 
         if not isinstance(place_id, Place):
             raise ValueError("Place must be an instance of Place")
+        if not self.verification_place(place_id):
+            raise ValueError("Place does not exist")
         if not isinstance(user_id, User):
             raise ValueError("User must be an instance of User")
+        if not self.verification_user(user_id):
+            raise ValueError("User does not exist")
         if not isinstance(rating, int):
             raise ValueError("Rating must be an integer")
         if rating < 1 or rating > 5:

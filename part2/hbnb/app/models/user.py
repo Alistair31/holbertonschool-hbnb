@@ -8,14 +8,20 @@ class User(BaseModel):
                  email: str, password=None, is_admin=False):
         super().__init__()
 
-        if isinstance(first_name, str) is False:
+        if not isinstance(first_name, str):
             raise TypeError("Must be a string type entry.")
-        if isinstance(last_name, str) is False:
+        if len(first_name) == 0:
+            raise ValueError("First name cannot be empty.")
+        if not isinstance(last_name, str):
             raise TypeError("Must be a string type entry.")
-        if isinstance(email, str) is False:
+        if len(last_name) == 0:
+            raise ValueError("Last name cannot be empty.")
+        if not isinstance(email, str):
             raise TypeError("Must be a string type entry.")
-        if password is not None and isinstance(password, str) is False:
-            raise TypeError("Must be a string type entry.")
+        if not self.is_valid_email(email):
+            raise ValueError("invalid email format.")
+        # if not isinstance(password, str):
+            # raise TypeError("Must be a string type entry.")
         if len(first_name) > 50 or len(last_name) > 50:
             raise ValueError("Oversized text, must be 50 character max.")
         if isinstance(is_admin, bool) is False:
@@ -29,7 +35,7 @@ class User(BaseModel):
 
     @staticmethod
     def is_valid_email(email):
-        return validators.email(email) is not None
+        return validators.email(email) is True
 
     @staticmethod
     def is_email_unique(db_path, email):
@@ -48,3 +54,19 @@ class User(BaseModel):
         if not User.is_valid_email(email):
             return False, "Wrong format for email address"
         return User.is_email_unique(db_path, email), "Email ok"
+
+    def update_user(self, user_id, user_data):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return None
+
+        for key, value in user_data.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+
+        if hasattr(user, 'validate'):
+            user.validate()
+
+        self.user_repo.update(user_id, user_data)
+
+        return user
