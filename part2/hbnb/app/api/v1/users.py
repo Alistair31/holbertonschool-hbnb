@@ -34,6 +34,17 @@ class UserList(Resource):
             # Capture "Must be a string type entry"
             api.abort(400, str(e))
 
+    @api.response(200, 'Users retrieved successfully')
+    @api.response(404, 'No users found')
+    def get(self):
+        """Get all users"""
+        users = facade.get_users()
+        if not users:
+            return {'error': 'No users found'}, 404
+        return [{'id': user.id, 'first_name': user.first_name,
+                 'last_name': user.last_name, 'email': user.email}
+                for user in users], 200
+
 
 @api.route('/<user_id>')
 class UserResource(Resource):
@@ -41,7 +52,7 @@ class UserResource(Resource):
     @api.response(404, 'User not found')
     def get(self, user_id):
         """Get user details by ID"""
-        user = facade.get_user(user_id)
+        user = facade.get_user_by_id(user_id)
         if not user:
             return {'error': 'User not found'}, 404
         return {'id': user.id, 'first_name': user.first_name,
@@ -54,7 +65,7 @@ class UserResource(Resource):
     def put(self, user_id):
         """Update user details"""
         user_data = api.payload
-        user = facade.get_user(user_id)
+        user = facade.get_user_by_id(user_id)
         if not user:
             return {'error': 'User not found'}, 404
 
@@ -70,7 +81,7 @@ class UserResource(Resource):
     @api.response(404, 'User not found')
     def delete(self, user_id):
         """Delete a user by ID"""
-        user = facade.get_user(user_id)
+        user = facade.get_user_by_id(user_id)
         if not user:
             return {'error': 'User not found'}, 404
         facade.delete_user(user_id)

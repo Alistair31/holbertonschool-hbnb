@@ -18,11 +18,11 @@ class HBnBFacade:
         self.user_repo.add(new_user)
         return new_user
 
-    def get_user(self, user_id):
+    def get_user_by_id(self, user_id):
         return self.user_repo.get(user_id)
 
-    def get_user_by_email(self, email):
-        return self.user_repo.get_by_attribute('email', email)
+    def get_users(self):
+        return self.user_repo.get_all()
 
     def update_user(self, user_id, user_data):
         user = self.user_repo.get(user_id)
@@ -115,7 +115,7 @@ class HBnBFacade:
         user_id = review_data.get('user_id')
         place_id = review_data.get('place_id')
 
-        user_obj = self.get_user(user_id)
+        user_obj = self.get_user_by_id(user_id)
         place_obj = self.get_place(place_id)
 
         if not user_obj:
