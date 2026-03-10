@@ -90,7 +90,7 @@ class PlaceResource(Resource):
                 if hasattr(place.owner, 'id') else place.owner,
                 'amenities': [a.id for a in place.amenities]}, 200
 
-    @api.expect(place_model)
+    @api.expect(place_model, validate=True)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
@@ -103,14 +103,18 @@ class PlaceResource(Resource):
 
             if not updated_place:
                 api.abort(404, "Place not found")
+            if updated_place.title is not None:
+                if not isinstance(updated_place.title, str) or updated_place.title.strip() == "":
+                    api.abort(400, "Title must be a string")
+            if updated_place.description is not None:
+                if not isinstance(updated_place.description, str) or updated_place.description.strip() == "":
+                    api.abort(400, "Description must be a string")
 
             return {
                 'id': updated_place.id,
                 'title': updated_place.title,
                 'description': updated_place.description,
                 'price': updated_place.price,
-                'latitude': updated_place.latitude,
-                'longitude': updated_place.longitude,
                 'owner_id': updated_place.owner.id
                 if hasattr(updated_place.owner, 'id') else updated_place.owner,
                 'amenities': [a.id if hasattr(a, 'id')
