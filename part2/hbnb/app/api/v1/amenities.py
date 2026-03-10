@@ -17,11 +17,12 @@ class AmenityList(Resource):
     def post(self):
         """Register a new amenity"""
         amenity_data = api.payload
-        
+
         existing_amenity = facade.get_amenity_by_name(amenity_data.get('name'))
         if existing_amenity:
             return {'error': 'Amenity already registered'}, 400
-
+        if not isinstance(amenity_data.get('name'), str):
+            return {'error': 'Amenity name must be a string'}, 400
         try:
             new_amenity = facade.create_amenity(amenity_data)
             return {'id': new_amenity.id, 'name': new_amenity.name}, 201
@@ -32,7 +33,9 @@ class AmenityList(Resource):
     def get(self):
         """Retrieve a list of all amenities"""
         amenities = facade.get_all_amenities()
-        return [{'id': amenity.id, 'name': amenity.name} for amenity in amenities], 200
+        return [{'id': amenity.id, 'name': amenity.name}
+                for amenity in amenities], 200
+
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
         """Retrieve a list of all amenities"""
@@ -52,12 +55,17 @@ class AmenityResource(Resource):
             return {'error': 'Amenity not found'}, 404
         return {'id': amenity.id, 'name': amenity.name}, 200
 
-    @api.expect(amenity_model)
+    @api.expect(amenity_model, validate=True)
     @api.response(200, 'Amenity updated successfully')
     @api.response(404, 'Amenity not found')
+    @api.response(400, 'Invalid input data')
     def put(self, amenity_id):
         """Update amenity details"""
         amenity_data = api.payload
+        if not isinstance(amenity_data.get('name'), str):
+            return {'error': 'Amenity name must be a string'}, 400
+        if not amenity_data.get('name', '').strip():
+            return {'error': 'Amenity name cannot be empty'}, 400
         updated_amenity = facade.update_amenity(amenity_id, amenity_data)
         if not updated_amenity:
             return {'error': 'Amenity not found'}, 404

@@ -78,6 +78,12 @@ class ReviewResource(Resource):
         updated_review = facade.update_review(review_id, review_data)
         if not updated_review:
             api.abort(404, 'Review not found')
+        if updated_review.text is not None:
+            if not isinstance(updated_review.text, str) or updated_review.text.strip() == "":
+                api.abort(400, "Text must be a string")
+        if updated_review.rating is not None:
+            if not isinstance(updated_review.rating, int) or not (1 <= updated_review.rating <= 5):
+                api.abort(400, "Rating must be an integer between 1 and 5")
         return {'message': 'Review updated successfully'}, 200
 
     @api.response(200, 'Review deleted successfully')
@@ -89,3 +95,19 @@ class ReviewResource(Resource):
             api.abort(404, 'Review not found')
         facade.delete_review(review_id)
         return {'message': 'Review deleted successfully'}, 200
+
+
+@api.route('/places/<place_id>')
+class PlaceReviewList(Resource):
+    @api.response(200, 'Reviews for the place retrieved successfully')
+    def get(self, place_id):
+        """Get all reviews for a specific place"""
+        reviews = facade.get_reviews_by_place(place_id)
+
+        return [{
+            'id': r.id,
+            'text': r.text,
+            'rating': r.rating,
+            'user_id': r.user.id,
+            'place_id': r.place.id
+        } for r in reviews], 200
