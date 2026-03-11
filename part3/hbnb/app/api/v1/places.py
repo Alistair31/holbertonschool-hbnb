@@ -1,5 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 
 api = Namespace('places', description='Place operations')
 
@@ -39,9 +41,16 @@ class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(401, 'Token is missing or invalid')
+    @jwt_required()
+
     def post(self):
         """Register a new place"""
         place_data = api.payload
+
+        current_user_id = get_jwt_identity()
+
+        place_data['owner_id'] = current_user_id
 
         try:
             new_place = facade.create_place(place_data)
@@ -53,8 +62,7 @@ class PlaceList(Resource):
                 'price': new_place.price,
                 'latitude': new_place.latitude,
                 'longitude': new_place.longitude,
-                'owner_id': new_place.owner.id
-                if hasattr(new_place.owner, 'id') else new_place.owner,
+                'owner_id': new_place.owner.id if hasattr(new_place.owner, 'id') else new_place.owner,
                 'amenities': [a.id for a in new_place.amenities]
             }, 201
 
@@ -90,35 +98,39 @@ class PlaceResource(Resource):
                 if hasattr(place.owner, 'id') else place.owner,
                 'amenities': [a.id for a in place.amenities]}, 200
 
+    @jwt_required()
     @api.expect(place_model, validate=True)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
+    @api.response(403, 'Unauthorized action')
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
+        """Update a place's information"""
+        current_user_id = get_jwt_identity()
+
+        place = facade.get_place(place_id)
+        if not place:
+            api.abort(404, "Place not found")
+
+        owner_id = place.owner.id if hasattr(place.owner, 'id') else place.owner
+        if str(owner_id) != str(current_user_id):
+            api.abort(403, "Unauthorized action")
+
         try:
-
             place_data = api.payload
-
             updated_place = facade.update_place(place_id, place_data)
 
-            if not updated_place:
-                api.abort(404, "Place not found")
             if updated_place.title is not None:
                 if not isinstance(updated_place.title, str) or updated_place.title.strip() == "":
                     api.abort(400, "Title must be a string")
-            if updated_place.description is not None:
-                if not isinstance(updated_place.description, str) or updated_place.description.strip() == "":
-                    api.abort(400, "Description must be a string")
 
             return {
                 'id': updated_place.id,
                 'title': updated_place.title,
                 'description': updated_place.description,
                 'price': updated_place.price,
-                'owner_id': updated_place.owner.id
-                if hasattr(updated_place.owner, 'id') else updated_place.owner,
-                'amenities': [a.id if hasattr(a, 'id')
-                              else a for a in updated_place.amenities]
+                'owner_id': updated_place.owner.id if hasattr(updated_place.owner, 'id') else updated_place.owner,
+                'amenities': [a.id if hasattr(a, 'id') else a for a in updated_place.amenities]
             }, 200
 
         except (ValueError, TypeError) as e:

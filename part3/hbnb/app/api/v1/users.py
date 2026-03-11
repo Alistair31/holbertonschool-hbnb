@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required
-from app import bcrypt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 api = Namespace('users', description='User operations')
@@ -62,13 +61,23 @@ class UserResource(Resource):
         return {'id': user.id, 'first_name': user.first_name,
                 'last_name': user.last_name, 'email': user.email}, 200
 
+    @jwt_required()
     @api.expect(user_model, validate=True)
     @api.response(200, 'User successfully updated')
     @api.response(404, 'User not found')
+    @api.response(403, 'Unauthorized action')
     @api.response(400, 'Invalid input data')
     def put(self, user_id):
         """Update user details"""
+        current_user_id = get_jwt_identity()
         user_data = api.payload
+
+        if str(current_user_id) != str(user_id):
+            api.abort(403, "Unauthorized action")
+
+        if 'email' in user_data or 'password' in user_data:
+            api.abort(400, "You cannot modify email or password")
+
         user = facade.get_user_by_id(user_id)
         if not user:
             return {'error': 'User not found'}, 404
@@ -81,12 +90,20 @@ class UserResource(Resource):
             'email': updated_user.email
         }, 200
 
+    @jwt_required()
     @api.response(204, 'User successfully deleted')
     @api.response(404, 'User not found')
+    @api.response(403, 'Unauthorized action')
     def delete(self, user_id):
         """Delete a user by ID"""
+        current_user_id = get_jwt_identity()
+        
+        if str(current_user_id) != str(user_id):
+            api.abort(403, "Unauthorized action")
+
         user = facade.get_user_by_id(user_id)
         if not user:
             return {'error': 'User not found'}, 404
+
         facade.delete_user(user_id)
         return '', 204
