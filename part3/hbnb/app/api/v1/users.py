@@ -1,5 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask_jwt_extended import jwt_required
+from app import bcrypt
 
 
 api = Namespace('users', description='User operations')
@@ -20,9 +22,6 @@ class UserList(Resource):
         """Register a new user"""
         user_data = api.payload
 
-        if 'password' in user_data:
-            user_data['password'] = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')
-
         try:
             new_user = facade.create_user(user_data)
             return {
@@ -38,6 +37,7 @@ class UserList(Resource):
             # Capture "Must be a string type entry"
             api.abort(400, str(e))
 
+    @jwt_required()
     @api.response(200, 'Users retrieved successfully')
     @api.response(404, 'No users found')
     def get(self):
