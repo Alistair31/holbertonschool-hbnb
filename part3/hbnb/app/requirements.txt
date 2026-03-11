@@ -1,0 +1,5 @@
+flask
+flask-restx
+validators
+flask-bcrypt
+flask-jwt-extended
