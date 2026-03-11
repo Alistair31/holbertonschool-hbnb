@@ -6,6 +6,14 @@ from flask_jwt_extended import JWTManager
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
+authorizations = {
+    'bearerAuth': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'Authorization',
+        'description': "Entrez votre token comme ceci : Bearer <votre_token>"
+    }
+}
 
 
 def create_app(config_class="app.config.DevelopmentConfig"):
@@ -22,7 +30,9 @@ def create_app(config_class="app.config.DevelopmentConfig"):
     from app.api.v1.auth import api as auth_ns
 
     api = Api(app, version='1.0', title='HBnB API',
-              description='HBnB Application API', doc='/')
+              description='HBnB Application API', doc='/',
+              authorizations=authorizations,
+              security='bearerAuth')
 
     api.add_namespace(users_ns, path='/api/v1/users')
     api.add_namespace(amenities_ns, path='/api/v1/amenities')
