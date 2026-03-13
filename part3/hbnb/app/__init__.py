@@ -2,8 +2,9 @@ from flask import Flask
 from flask_restx import Api
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_sqlalchemy import SQLAlchemy
 
-
+db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
 authorizations = {
@@ -19,9 +20,11 @@ authorizations = {
 def create_app(config_class="app.config.DevelopmentConfig"):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.config['JSON_AS_ASCII'] = False
 
     bcrypt.init_app(app)
     jwt.init_app(app)
+    db.init_app(app)
 
     from app.api.v1.users import api as users_ns
     from app.api.v1.amenities import api as amenities_ns

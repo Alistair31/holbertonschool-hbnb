@@ -1,5 +1,4 @@
 from flask_restx import Namespace, Resource, fields
-from app.models.place import Place
 from app.services import facade
 
 
@@ -36,6 +35,8 @@ class ReviewList(Resource):
                 'user_id': new_review.user.id,
                 'place_id': new_review.place.id
             }, 201
+        except ValueError as e:
+            return {'message': str(e)}, 400
         except ValueError as e:
             api.abort(400, str(e))
 
@@ -79,10 +80,12 @@ class ReviewResource(Resource):
         if not updated_review:
             api.abort(404, 'Review not found')
         if updated_review.text is not None:
-            if not isinstance(updated_review.text, str) or updated_review.text.strip() == "":
+            if not isinstance(updated_review.text, str
+                              ) or updated_review.text.strip() == "":
                 api.abort(400, "Text must be a string")
         if updated_review.rating is not None:
-            if not isinstance(updated_review.rating, int) or not (1 <= updated_review.rating <= 5):
+            if not isinstance(updated_review.rating, int
+                              ) or not (1 <= updated_review.rating <= 5):
                 api.abort(400, "Rating must be an integer between 1 and 5")
         return {'message': 'Review updated successfully'}, 200
 

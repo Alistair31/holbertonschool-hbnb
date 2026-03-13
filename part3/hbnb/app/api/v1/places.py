@@ -1,3 +1,4 @@
+from flask_jwt_extended import get_jwt, jwt_required
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 
@@ -104,10 +105,13 @@ class PlaceResource(Resource):
             if not updated_place:
                 api.abort(404, "Place not found")
             if updated_place.title is not None:
-                if not isinstance(updated_place.title, str) or updated_place.title.strip() == "":
+                if not isinstance(updated_place.title,
+                                  str) or updated_place.title.strip() == "":
                     api.abort(400, "Title must be a string")
             if updated_place.description is not None:
-                if not isinstance(updated_place.description, str) or updated_place.description.strip() == "":
+                if not isinstance(updated_place.description,
+                                  str) or updated_place.description.strip(
+                                  ) == "":
                     api.abort(400, "Description must be a string")
 
             return {
@@ -123,3 +127,21 @@ class PlaceResource(Resource):
 
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
+
+
+@api.route('/places/<place_id>')
+class AdminPlaceModify(Resource):
+    @jwt_required()
+    def put(self, place_id):
+        current_user = get_jwt()
+
+        # Set is_admin default to False if not exists
+        is_admin = current_user.get('is_admin', False)
+        user_id = current_user.get('id')
+
+        place = facade.get_place(place_id)
+        if not is_admin and place.owner_id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        # Logic to update the place
+        pass

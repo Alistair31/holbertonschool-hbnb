@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models.user import User
 
 
 api = Namespace('auth', description='Authentication operations')
@@ -25,8 +24,6 @@ class Login(Resource):
 
         # Step 1: Retrieve the user based on the provided email
         user = facade.get_user_by_email(credentials['email'])
-        print(f"DEBUG: Password reçu: {credentials['password']}")
-        print(f"DEBUG: Password en base: {user.password if user else 'User non trouvé'}")
         # Step 2: Check if the user exists and the password is correct
         if not user or not user.verify_password(credentials['password']):
             return {'error': 'Invalid credentials'}, 401
@@ -46,8 +43,9 @@ class ProtectedResource(Resource):
         """A protected endpoint that requires a valid JWT token"""
         print("jwt------")
         print(get_jwt_identity())
-        current_user = get_jwt_identity()  # Retrieve the user's identity from the token
-        # if you need to see if the user is an admin or not, you can access additional claims using get_jwt() :
+        current_user = get_jwt_identity()
+        # if you need to see if the user is an admin or not,
+        # you can access additional claims using get_jwt() :
         # addtional claims = get_jwt()
         # additional claims["is_admin"] -> True or False
         return {'message': f'Hello, user {current_user}'}, 200

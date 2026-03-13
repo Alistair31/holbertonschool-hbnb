@@ -1,17 +1,21 @@
+from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required
-from app import bcrypt
+from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 
 
 api = Namespace('users', description='User operations')
 
 # Define the user model for input validation and documentation
 user_model = api.model('User', {
-    'first_name': fields.String(required=True, description='First name of the user'),
-    'last_name': fields.String(required=True, description='Last name of the user'),
-    'email': fields.String(required=True, description='Email of the user'),
-    'password': fields.String(required=True, description='Password of the user')
+    'first_name': fields.String(required=True,
+                                description='First name of the user'),
+    'last_name': fields.String(required=True,
+                               description='Last name of the user'),
+    'email': fields.String(required=True,
+                           description='Email of the user'),
+    'password': fields.String(required=True,
+                              description='Password of the user')
 })
 
 
@@ -90,3 +94,24 @@ class UserResource(Resource):
             return {'error': 'User not found'}, 404
         facade.delete_user(user_id)
         return '', 204
+
+
+@api.route('/users/<user_id>')
+class AdminUserModify(Resource):
+    @jwt_required()
+    def put(self, user_id):
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        data = request.json
+        email = data.get('email')
+
+        # Ensure email uniqueness
+        if email:
+            existing_user = facade.get_user_by_email(email)
+            if existing_user and existing_user.id != user_id:
+                return {'error': 'Email already in use'}, 400
+
+        # Logic to update user details
+        pass
