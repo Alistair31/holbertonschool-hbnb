@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 
 api = Namespace('places', description='Place operations')
@@ -98,40 +98,62 @@ class PlaceResource(Resource):
                 if hasattr(place.owner, 'id') else place.owner,
                 'amenities': [a.id for a in place.amenities]}, 200
 
-    @jwt_required()
+
     @api.expect(place_model, validate=True)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(403, 'Unauthorized action')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, place_id):
         """Update a place's information"""
+        claims = get_jwt()
         current_user_id = get_jwt_identity()
+        is_admin = claims.get('is_admin', False)
 
         place = facade.get_place(place_id)
         if not place:
-            api.abort(404, "Place not found")
+            return {'error': 'Place not found'}, 404
 
         owner_id = place.owner.id if hasattr(place.owner, 'id') else place.owner
-        if str(owner_id) != str(current_user_id):
-            api.abort(403, "Unauthorized action")
+
+        if not is_admin and str(owner_id) != str(current_user_id):
+            return {'error': 'Unauthorized action'}, 403
 
         try:
             place_data = api.payload
             updated_place = facade.update_place(place_id, place_data)
-
-            if updated_place.title is not None:
-                if not isinstance(updated_place.title, str) or updated_place.title.strip() == "":
-                    api.abort(400, "Title must be a string")
 
             return {
                 'id': updated_place.id,
                 'title': updated_place.title,
                 'description': updated_place.description,
                 'price': updated_place.price,
-                'owner_id': updated_place.owner.id if hasattr(updated_place.owner, 'id') else updated_place.owner,
+                'owner_id': owner_id,
                 'amenities': [a.id if hasattr(a, 'id') else a for a in updated_place.amenities]
             }, 200
 
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
+
+    @api.response(204, 'Place successfully deleted')
+    @api.response(404, 'Place not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def delete(self, place_id):
+        """Delete a place by ID"""
+        claims = get_jwt()
+        current_user_id = get_jwt_identity()
+        is_admin = claims.get('is_admin', False)
+
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Place not found'}, 404
+
+        owner_id = place.owner.id if hasattr(place.owner, 'id') else place.owner
+
+        if not is_admin and str(owner_id) != str(current_user_id):
+            return {'error': 'Unauthorized action'}, 403
+
+        facade.delete_place(place_id)
+        return '', 204

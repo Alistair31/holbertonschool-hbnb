@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 
 api = Namespace('users', description='User operations')
@@ -16,8 +16,12 @@ user_model = api.model('User', {
 
 @api.route('/')
 class UserList(Resource):
+    @jwt_required()
     @api.expect(user_model, validate=True)
     def post(self):
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
         """Register a new user"""
         user_data = api.payload
 
@@ -63,26 +67,30 @@ class UserResource(Resource):
 
     @jwt_required()
     @api.expect(user_model, validate=True)
-    @api.response(200, 'User successfully updated')
-    @api.response(404, 'User not found')
-    @api.response(403, 'Unauthorized action')
-    @api.response(400, 'Invalid input data')
     def put(self, user_id):
-        """Update user details"""
+        """Update user details (Admin bypass)"""
+        claims = get_jwt()
         current_user_id = get_jwt_identity()
-        user_data = api.payload
+        is_admin = claims.get('is_admin', False)
 
-        if str(current_user_id) != str(user_id):
+        if not is_admin and str(current_user_id) != str(user_id):
             api.abort(403, "Unauthorized action")
 
-        if 'email' in user_data or 'password' in user_data:
-            api.abort(400, "You cannot modify email or password")
+        user_data = api.payload
 
-        user = facade.get_user_by_id(user_id)
-        if not user:
-            return {'error': 'User not found'}, 404
+        if not is_admin and ('email' in user_data or 'password' in user_data):
+            api.abort(400, "Regular users cannot modify email or password")
+
+        email = user_data.get('email')
+        if email:
+            existing_user = facade.get_user_by_email(email)
+            if existing_user and str(existing_user.id) != str(user_id):
+                api.abort(400, "Email already in use")
 
         updated_user = facade.update_user(user_id, user_data)
+        if not updated_user:
+            return {'error': 'User not found'}, 404
+
         return {
             'id': updated_user.id,
             'first_name': updated_user.first_name,
@@ -91,18 +99,16 @@ class UserResource(Resource):
         }, 200
 
     @jwt_required()
-    @api.response(204, 'User successfully deleted')
-    @api.response(404, 'User not found')
-    @api.response(403, 'Unauthorized action')
     def delete(self, user_id):
-        """Delete a user by ID"""
+        """Delete a user (Admin bypass)"""
+        claims = get_jwt()
         current_user_id = get_jwt_identity()
-        
-        if str(current_user_id) != str(user_id):
+        is_admin = claims.get('is_admin', False)
+
+        if not is_admin and str(current_user_id) != str(user_id):
             api.abort(403, "Unauthorized action")
 
-        user = facade.get_user_by_id(user_id)
-        if not user:
+        if not facade.get_user_by_id(user_id):
             return {'error': 'User not found'}, 404
 
         facade.delete_user(user_id)

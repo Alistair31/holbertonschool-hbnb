@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.models.place import Place
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 
 api = Namespace('reviews', description='Review operations')
@@ -96,15 +96,18 @@ class ReviewResource(Resource):
     @api.response(403, 'Unauthorized action')
     def put(self, review_id):
         """Update a review's information"""
+        claims = get_jwt()
         current_user_id = get_jwt_identity()
+        is_admin = claims.get('is_admin', False)
+
         review = facade.get_review(review_id)
-        
         if not review:
             api.abort(404, 'Review not found')
 
         author_id = review.user.id if hasattr(review.user, 'id') else review.user_id
-        if str(author_id) != str(current_user_id):
-            api.abort(403, "Unauthorized action")
+
+        if not is_admin and str(author_id) != str(current_user_id):
+            return {'error': 'Unauthorized action'}, 403
 
         review_data = api.payload
         try:
@@ -113,28 +116,30 @@ class ReviewResource(Resource):
                 'id': updated_review.id,
                 'text': updated_review.text,
                 'rating': updated_review.rating,
-                'user_id': updated_review.user.id if hasattr(updated_review.user, 'id') else updated_review.user_id,
+                'user_id': author_id,
                 'place_id': updated_review.place.id if hasattr(updated_review.place, 'id') else updated_review.place_id
             }, 200
+        except (ValueError, TypeError) as e:
+            api.abort(400, str(e))
 
     @jwt_required()
-    @api.response(200, 'Review deleted successfully')
-    @api.response(404, 'Review not found')
+    @api.response(204, 'Review deleted successfully')
     @api.response(403, 'Unauthorized action')
     def delete(self, review_id):
-        """Delete a review"""
+        """Delete a review (Author or Admin)"""
+        claims = get_jwt()
         current_user_id = get_jwt_identity()
-        review = facade.get_review(review_id)
-        
-        if not review:
-            api.abort(404, 'Review not found')
+        is_admin = claims.get('is_admin', False)
 
-        author_id = review.user.id if hasattr(review.user, 'id') else review.user_id
-        if str(author_id) != str(current_user_id):
-            api.abort(403, "Unauthorized action")
+        review = facade.get_review(review_id)
+        if not review:
+            return {'error': 'Review not found'}, 404
+
+        if not is_admin and str(review.user_id) != str(current_user_id):
+            return {'error': 'Unauthorized action'}, 403
 
         facade.delete_review(review_id)
-        return {'message': 'Review deleted successfully'}, 200
+        return '', 204
 
 
 @api.route('/places/<place_id>')
