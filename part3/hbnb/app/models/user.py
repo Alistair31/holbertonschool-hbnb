@@ -3,7 +3,7 @@ from app import db
 import validators
 
 
-class User(BaseModel):
+class User(BaseModel, db.Model):
     __tablename__ = 'users'
 
     first_name = db.Column(db.String(50), nullable=False)
@@ -11,6 +11,10 @@ class User(BaseModel):
     email = db.Column(db.String(120), nullable=False, unique=True)
     password = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+
+    places = db.relationship('Place', back_populates='owner',
+                             cascade="all, delete-orphan")
+    reviews = db.relationship('Review', back_populates='user', lazy=True)
 
     def __init__(self, first_name: str, last_name: str,
                  email: str, password=None, is_admin=False):

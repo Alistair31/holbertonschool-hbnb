@@ -76,26 +76,3 @@ class AmenityResource(Resource):
             'id': updated_amenity.id,
             'name': updated_amenity.name
         }, 200
-
-    @api.route('/amenities/<amenity_id>')
-    class AdminAmenityModify(Resource):
-        @jwt_required()
-        def put(self, amenity_id):
-            current_user = get_jwt()
-            if not current_user.get('is_admin'):
-                return {'error': 'Admin privileges required'}, 403
-
-            # Logic to update an amenity
-            pass
-
-
-@api.route('/amenities/')
-class AdminAmenityCreate(Resource):
-    @jwt_required()
-    def post(self):
-        current_user = get_jwt()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-
-        # Logic to create a new amenity
-        pass

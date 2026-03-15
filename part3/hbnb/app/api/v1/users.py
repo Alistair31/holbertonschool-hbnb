@@ -94,24 +94,3 @@ class UserResource(Resource):
             return {'error': 'User not found'}, 404
         facade.delete_user(user_id)
         return '', 204
-
-
-@api.route('/users/<user_id>')
-class AdminUserModify(Resource):
-    @jwt_required()
-    def put(self, user_id):
-        current_user = get_jwt()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-
-        data = request.json
-        email = data.get('email')
-
-        # Ensure email uniqueness
-        if email:
-            existing_user = facade.get_user_by_email(email)
-            if existing_user and existing_user.id != user_id:
-                return {'error': 'Email already in use'}, 400
-
-        # Logic to update user details
-        pass

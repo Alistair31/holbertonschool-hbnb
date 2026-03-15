@@ -2,6 +2,7 @@ from app.models.base_models import BaseModel
 from app.models.place import Place
 from app.models.user import User
 from app import db
+from app.models import place, user
 
 
 class Review(BaseModel, db.Model):
@@ -15,39 +16,27 @@ class Review(BaseModel, db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'),
                         nullable=False)
 
-    def __init__(self, text: str, rating: int, place_id: Place, user_id: User):
+    user = db.relationship('User', back_populates='reviews', lazy=True)
+    place = db.relationship('Place', back_populates='reviews', lazy=True)
+
+    def __init__(self, text: str, rating: int, place: Place, user: User):
         super().__init__()
 
-        if not isinstance(place_id, Place):
-            raise ValueError("Place must be an instance of Place")
-        if not self.verification_place(place_id):
-            raise ValueError("Place does not exist")
-        if not isinstance(user_id, User):
-            raise ValueError("User must be an instance of User")
-        if not self.verification_user(user_id):
-            raise ValueError("User does not exist")
-        if not isinstance(rating, int):
-            raise ValueError("Rating must be an integer")
-        if rating < 1 or rating > 5:
-            raise ValueError("Rating must be between 1 and 5")
-        if not isinstance(text, str):
-            raise ValueError("Text must be a string")
-        if not text:
-            raise ValueError("Text cannot be empty")
+        if not text or not isinstance(text, str):
+            raise ValueError("Text must be a non-empty string")
 
-        if hasattr(place_id, 'id'):
-            self.place_id = place_id.id
-        else:
-            self.place_id = place_id
-        if hasattr(user_id, 'id'):
-            self.user_id = user_id.id
-        else:
-            self.user_id = user_id
+        if not isinstance(rating, int) or not (1 <= rating <= 5):
+            raise ValueError("Rating must be an integer between 1 and 5")
+
+        if not isinstance(place, Place):
+            raise ValueError("place must be a valid instance of Place")
+        if not isinstance(user, User):
+            raise ValueError("user must be a valid instance of User")
 
         self.text: str = text
         self.rating: int = rating
-        self.place: Place = place_id
-        self.user: User = user_id
+        self.place: Place = place
+        self.user: User = user
 
     @staticmethod
     def verification_place(place: Place | None) -> bool:
