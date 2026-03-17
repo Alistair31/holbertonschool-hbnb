@@ -1,7 +1,17 @@
 from app.models.base_models import BaseModel
+from app import db
 
 
 class Place(BaseModel):
+    __tablename__ = 'places'
+
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    owner = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+
     def __init__(self, title: str, description: str, price: float,
                  latitude: float, longitude: float, owner: str):
         super().__init__()

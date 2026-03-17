@@ -120,6 +120,17 @@ class PlaceResource(Resource):
         if not is_admin and str(owner_id) != str(current_user_id):
             return {'error': 'Unauthorized action'}, 403
 
+            if not updated_place:
+                api.abort(404, "Place not found")
+            if updated_place.title is not None:
+                if not isinstance(updated_place.title,
+                                  str) or updated_place.title.strip() == "":
+                    api.abort(400, "Title must be a string")
+            if updated_place.description is not None:
+                if not isinstance(updated_place.description,
+                                  str) or updated_place.description.strip(
+                                  ) == "":
+                    api.abort(400, "Description must be a string")
         try:
             place_data = api.payload
             updated_place = facade.update_place(place_id, place_data)
@@ -136,6 +147,23 @@ class PlaceResource(Resource):
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
 
+
+@api.route('/places/<place_id>')
+class AdminPlaceModify(Resource):
+    @jwt_required()
+    def put(self, place_id):
+        current_user = get_jwt()
+
+        # Set is_admin default to False if not exists
+        is_admin = current_user.get('is_admin', False)
+        user_id = current_user.get('id')
+
+        place = facade.get_place(place_id)
+        if not is_admin and place.owner_id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        # Logic to update the place
+        pass
     @api.response(204, 'Place successfully deleted')
     @api.response(404, 'Place not found')
     @api.response(403, 'Unauthorized action')
