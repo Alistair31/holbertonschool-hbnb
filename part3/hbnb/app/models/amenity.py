@@ -1,23 +1,21 @@
 from app.models.base_models import BaseModel
 from app import db
 
-
-class Amenity(BaseModel, db.Model):
+class Amenity(BaseModel):
     __tablename__ = 'amenities'
+
 
     name = db.Column(db.String(100), nullable=False)
 
-    def __init__(self, name: str, description=None):
-        super().__init__()
+    def __init__(self, name: str, **kwargs):
+
+        super().__init__(**kwargs)
+
 
         if not isinstance(name, str) or not name.strip():
             raise ValueError("Name must be a non-empty string")
-        if description is not None and (not isinstance(description, str)
-                                        or not description.strip()):
-            raise ValueError("Description must be a non-empty string")
 
-        self.name: str = name
-        # self.description: str = description
+        self.name = name
 
     @staticmethod
     def verification_name(name: str) -> bool:
