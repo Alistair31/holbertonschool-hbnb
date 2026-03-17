@@ -1,7 +1,12 @@
 from app.models.base_models import BaseModel
+from app import db
 
 
-class Amenity(BaseModel):
+class Amenity(BaseModel, db.Model):
+    __tablename__ = 'amenities'
+
+    name = db.Column(db.String(100), nullable=False)
+
     def __init__(self, name: str, description=None):
         super().__init__()
 
@@ -18,8 +23,3 @@ class Amenity(BaseModel):
     def verification_name(name: str) -> bool:
         """Vérifie si name est une chaîne de caractères non vide."""
         return isinstance(name, str) and bool(name.strip())
-
-    # @staticmethod
-    # def verification_description(description: str) -> bool:
-        # """Vérifie si description est une chaîne de caractères non vide."""
-        # return isinstance(description, str) and bool(description.strip())

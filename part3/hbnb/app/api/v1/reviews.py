@@ -1,5 +1,4 @@
 from flask_restx import Namespace, Resource, fields
-from app.models.place import Place
 from app.services import facade
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
@@ -56,6 +55,9 @@ class ReviewList(Resource):
                 'user_id': new_review.user.id if hasattr(new_review.user, 'id') else new_review.user_id,
                 'place_id': new_review.place.id if hasattr(new_review.place, 'id') else new_review.place_id
             }, 201
+        except ValueError as e:
+            return {'message': str(e)}, 400
+        except ValueError as e:
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
 
@@ -103,6 +105,18 @@ class ReviewResource(Resource):
         review = facade.get_review(review_id)
         if not review:
             api.abort(404, 'Review not found')
+        if updated_review.text is not None:
+            if not isinstance(updated_review.text, str
+                              ) or updated_review.text.strip() == "":
+                api.abort(400, "Text must be a string")
+        if updated_review.rating is not None:
+            if not isinstance(updated_review.rating, int
+                              ) or not (1 <= updated_review.rating <= 5):
+                api.abort(400, "Rating must be an integer between 1 and 5")
+        return {'message': 'Review updated successfully'}, 200
+
+    @api.response(200, 'Review deleted successfully')
+    @api.response(404, 'Review not found')
 
         author_id = review.user.id if hasattr(review.user, 'id') else review.user_id
 
