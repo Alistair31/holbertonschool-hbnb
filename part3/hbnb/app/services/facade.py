@@ -31,9 +31,6 @@ class HBnBFacade:
     def get_user_by_email(self, email):
         return self.user_repo.get_by_attribute('email', email)
 
-    def get_users(self):
-        return self.user_repo.get_all()
-
     def update_user(self, user_id, user_data):
         user = self.user_repo.get(user_id)
         if not user:
@@ -43,49 +40,51 @@ class HBnBFacade:
 
         return user
 
+    def delete_user(self, user_id):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return False
+
+        self.user_repo.delete(user_id)
+        return True
+
     def create_amenity(self, amenity_data):
-        # logic to create an amenity
         from app.models.amenity import Amenity
         new_amenity = Amenity(**amenity_data)
         self.amenity_repo.add(new_amenity)
         return new_amenity
 
     def get_amenity(self, amenity_id):
-        # logic to retrieve an amenity by ID
         return self.amenity_repo.get(amenity_id)
 
     def get_all_amenities(self):
-        # logic to retrieve all amenities
         return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
-        # logic to update an amenity
         self.amenity_repo.update(amenity_id, amenity_data)
         return self.amenity_repo.get(amenity_id)
 
     def get_amenity_by_name(self, name):
         return self.amenity_repo.get_by_attribute('name', name)
 
+    def delete_amenity(self, amenity_id):
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return False
+
+        self.amenity_repo.delete(amenity_id)
+        return True
+
     def create_place(self, place_data):
         from app.models.place import Place
 
-        # 1. Extraire les IDs
         owner_id = place_data.pop('owner_id', None)
         amenity_ids = place_data.pop('amenities', [])
 
-        # 2. Récupérer l'OBJET User (indispensable pour SQLAlchemy)
-        owner_obj = self.get_user_by_id(owner_id)
-        if not owner_obj:
-            raise ValueError("Owner not found")
+        place_data['owner_id'] = owner_id
 
-        # 3. On passe l'OBJET à la clé 'owner'
-        place_data['owner'] = owner
-
-        # 4. Création de l'instance
-        # SQLAlchemy sera content car il reçoit un objet User
         new_place = Place(**place_data)
 
-        # 5. Gestion des amenities
         for a_id in amenity_ids:
             amenity = self.get_amenity(a_id)
             if amenity:
@@ -127,54 +126,54 @@ class HBnBFacade:
 
         return place
 
+    def delete_place(self, place_id):
+        place = self.get_place(place_id)
+        if not place:
+            return False
+
+        self.place_repo.delete(place_id)
+        return True
+
     def create_review(self, review_data):
         from app.models.review import Review
 
-        # 1. Extraire les IDs bruts du payload
-        user_id = review_data.pop('user_id', None)
-        place_id = review_data.pop('place_id', None)
+        user_id = review_data.get('user_id')
+        place_id = review_data.get('place_id')
 
-        # 2. Récupérer les objets réels
         user_obj = self.get_user_by_id(user_id)
         place_obj = self.get_place(place_id)
 
-        user = self.get_user_by_id(user_id)
-        place = self.get_place(place_id)
-        if not user or not place:
-            raise ValueError("User or Place not found")
-        if place_obj.owner_id == user_id:
-            raise ValueError("You cannot review your own place")
-        existing_reviews = self.review_repo.get_by_attribute('user_id', user_id)
-        if existing_reviews and existing_reviews.place_id == place_id:
-            raise ValueError("User has already reviewed this place")
+        if not user_obj:
+            raise ValueError("User not found")
+        if not place_obj:
+            raise ValueError("Place not found")
+        if place_obj.owner_id == user_obj.id:
+            raise ValueError("You cannot review your own place!")
 
-        # 3. Réinjecter les OBJETS avec les noms attendus par le __init__ de Review
-        # Ton modèle attend 'user' et 'place' comme noms de paramètres
-        review_data['user'] = user_obj
-        review_data['place'] = place_obj
+        review_params = {
+            "text": review_data.get('text'),
+            "rating": review_data.get('rating'),
+            "user_id": user_obj,
+            "place_id": place_obj
+        }
 
-        # 4. Création de la review
-        new_review = Review(**review_data)
+        new_review = Review(**review_params)
 
         self.review_repo.add(new_review)
         return new_review
 
     def get_review(self, review_id):
-        # logic to retrieve a review by ID
         return self.review_repo.get(review_id)
 
     def get_all_reviews(self):
-        # logic to retrieve all reviews
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        return self.review_repo.get_by_attribute('place_id', place_id)
+        return [r for r in self.get_all_reviews() if r.place_id == place_id]
 
     def update_review(self, review_id, review_data):
-        # logic to update a review
         self.review_repo.update(review_id, review_data)
         return self.get_review(review_id)
 
     def delete_review(self, review_id):
-        # logic to delete a review
         self.review_repo.delete(review_id)
