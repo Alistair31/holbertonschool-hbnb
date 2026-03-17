@@ -20,7 +20,7 @@ class Review(BaseModel):
     )
 
     place = db.relationship('Place', back_populates='reviews')
-    user = db.relationship('User')
+    user = db.relationship('User', foreign_keys=[user_id])
 
     def __init__(self, text: str, rating: int, place_id: Place, user_id: User):
         super().__init__()
