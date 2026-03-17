@@ -4,7 +4,7 @@ from app.models.user import User
 from app import db
 
 
-class Review(BaseModel, db.Model):
+class Review(BaseModel):
     __tablename__ = 'reviews'
 
     text = db.Column(db.Text, nullable=False)
@@ -14,6 +14,13 @@ class Review(BaseModel, db.Model):
                          nullable=False)
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'),
                         nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'place_id', name='unique_user_place_review'),
+    )
+
+    place = db.relationship('Place', back_populates='reviews')
+    user = db.relationship('User')
 
     def __init__(self, text: str, rating: int, place_id: Place, user_id: User):
         super().__init__()
@@ -46,8 +53,6 @@ class Review(BaseModel, db.Model):
 
         self.text: str = text
         self.rating: int = rating
-        self.place: Place = place_id
-        self.user: User = user_id
 
     @staticmethod
     def verification_place(place: Place | None) -> bool:

@@ -43,7 +43,6 @@ class PlaceList(Resource):
     @api.response(400, 'Invalid input data')
     @api.response(401, 'Token is missing or invalid')
     @jwt_required()
-
     def post(self):
         """Register a new place"""
         place_data = api.payload
@@ -62,7 +61,7 @@ class PlaceList(Resource):
                 'price': new_place.price,
                 'latitude': new_place.latitude,
                 'longitude': new_place.longitude,
-                'owner_id': new_place.owner.id if hasattr(new_place.owner, 'id') else new_place.owner,
+                'owner_id': new_place.owner_id,
                 'amenities': [a.id for a in new_place.amenities]
             }, 201
 
@@ -76,8 +75,7 @@ class PlaceList(Resource):
         return [{'id': place.id, 'title': place.title,
                  'description': place.description, 'price': place.price,
                  'latitude': place.latitude, 'longitude': place.longitude,
-                 'owner_id': place.owner.id
-                 if hasattr(place.owner, 'id') else place.owner,
+                 'owner_id': place.owner_id,
                  'amenities': [a.id for a in place.amenities]}
                 for place in places], 200
 
@@ -94,10 +92,8 @@ class PlaceResource(Resource):
         return {'id': place.id, 'title': place.title,
                 'description': place.description, 'price': place.price,
                 'latitude': place.latitude, 'longitude': place.longitude,
-                'owner_id': place.owner.id
-                if hasattr(place.owner, 'id') else place.owner,
+                'owner_id': place.owner_id,
                 'amenities': [a.id for a in place.amenities]}, 200
-
 
     @api.expect(place_model, validate=True)
     @api.response(200, 'Place updated successfully')
@@ -115,22 +111,9 @@ class PlaceResource(Resource):
         if not place:
             return {'error': 'Place not found'}, 404
 
-        owner_id = place.owner.id if hasattr(place.owner, 'id') else place.owner
-
-        if not is_admin and str(owner_id) != str(current_user_id):
+        if not is_admin and str(place.owner_id) != str(current_user_id):
             return {'error': 'Unauthorized action'}, 403
 
-            if not updated_place:
-                api.abort(404, "Place not found")
-            if updated_place.title is not None:
-                if not isinstance(updated_place.title,
-                                  str) or updated_place.title.strip() == "":
-                    api.abort(400, "Title must be a string")
-            if updated_place.description is not None:
-                if not isinstance(updated_place.description,
-                                  str) or updated_place.description.strip(
-                                  ) == "":
-                    api.abort(400, "Description must be a string")
         try:
             place_data = api.payload
             updated_place = facade.update_place(place_id, place_data)
@@ -140,30 +123,14 @@ class PlaceResource(Resource):
                 'title': updated_place.title,
                 'description': updated_place.description,
                 'price': updated_place.price,
-                'owner_id': owner_id,
-                'amenities': [a.id if hasattr(a, 'id') else a for a in updated_place.amenities]
+                'owner_id': updated_place.owner_id,
+                'amenities': [a.id if hasattr(
+                    a, 'id') else a for a in updated_place.amenities]
             }, 200
 
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
 
-
-@api.route('/places/<place_id>')
-class AdminPlaceModify(Resource):
-    @jwt_required()
-    def put(self, place_id):
-        current_user = get_jwt()
-
-        # Set is_admin default to False if not exists
-        is_admin = current_user.get('is_admin', False)
-        user_id = current_user.get('id')
-
-        place = facade.get_place(place_id)
-        if not is_admin and place.owner_id != user_id:
-            return {'error': 'Unauthorized action'}, 403
-
-        # Logic to update the place
-        pass
     @api.response(204, 'Place successfully deleted')
     @api.response(404, 'Place not found')
     @api.response(403, 'Unauthorized action')
@@ -178,9 +145,7 @@ class AdminPlaceModify(Resource):
         if not place:
             return {'error': 'Place not found'}, 404
 
-        owner_id = place.owner.id if hasattr(place.owner, 'id') else place.owner
-
-        if not is_admin and str(owner_id) != str(current_user_id):
+        if not is_admin and str(place.owner_id) != str(current_user_id):
             return {'error': 'Unauthorized action'}, 403
 
         facade.delete_place(place_id)

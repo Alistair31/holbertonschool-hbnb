@@ -1,4 +1,3 @@
-from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
@@ -24,10 +23,10 @@ class UserList(Resource):
     @jwt_required()
     @api.expect(user_model, validate=True)
     def post(self):
+        """Register a new user"""
         claims = get_jwt()
         if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
-        """Register a new user"""
         user_data = api.payload
 
         try:
@@ -39,10 +38,8 @@ class UserList(Resource):
                 'email': new_user.email
             }, 201
         except ValueError as e:
-            # Capture "invalid email format" ou "Email already exists"
             api.abort(400, str(e))
         except TypeError as e:
-            # Capture "Must be a string type entry"
             api.abort(400, str(e))
 
     @jwt_required()
@@ -50,7 +47,7 @@ class UserList(Resource):
     @api.response(404, 'No users found')
     def get(self):
         """Get all users"""
-        users = facade.get_users()
+        users = facade.get_all_users()
         if not users:
             return {'error': 'No users found'}, 404
         return [{'id': user.id, 'first_name': user.first_name,
@@ -118,24 +115,3 @@ class UserResource(Resource):
 
         facade.delete_user(user_id)
         return '', 204
-
-
-@api.route('/users/<user_id>')
-class AdminUserModify(Resource):
-    @jwt_required()
-    def put(self, user_id):
-        current_user = get_jwt()
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-
-        data = request.json
-        email = data.get('email')
-
-        # Ensure email uniqueness
-        if email:
-            existing_user = facade.get_user_by_email(email)
-            if existing_user and existing_user.id != user_id:
-                return {'error': 'Email already in use'}, 400
-
-        # Logic to update user details
-        pass

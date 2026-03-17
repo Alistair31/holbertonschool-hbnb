@@ -31,9 +31,6 @@ class HBnBFacade:
     def get_user_by_email(self, email):
         return self.user_repo.get_by_attribute('email', email)
 
-    def get_users(self):
-        return self.user_repo.get_all()
-
     def update_user(self, user_id, user_data):
         user = self.user_repo.get(user_id)
         if not user:
@@ -42,6 +39,14 @@ class HBnBFacade:
         self.user_repo.update(user_id, user_data)
 
         return user
+
+    def delete_user(self, user_id):
+        user = self.user_repo.get(user_id)
+        if not user:
+            return False
+
+        self.user_repo.delete(user_id)
+        return True
 
     def create_amenity(self, amenity_data):
         # logic to create an amenity
@@ -66,13 +71,22 @@ class HBnBFacade:
     def get_amenity_by_name(self, name):
         return self.amenity_repo.get_by_attribute('name', name)
 
+    def delete_amenity(self, amenity_id):
+        # logic to delete an amenity
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return False
+
+        self.amenity_repo.delete(amenity_id)
+        return True
+
     def create_place(self, place_data):
         from app.models.place import Place
 
         owner_id = place_data.pop('owner_id', None)
         amenity_ids = place_data.pop('amenities', [])
 
-        place_data['owner'] = owner_id
+        place_data['owner_id'] = owner_id
 
         new_place = Place(**place_data)
 
@@ -116,6 +130,14 @@ class HBnBFacade:
 
         return place
 
+    def delete_place(self, place_id):
+        place = self.get_place(place_id)
+        if not place:
+            return False
+
+        self.place_repo.delete(place_id)
+        return True
+
     def create_review(self, review_data):
         from app.models.review import Review
 
@@ -129,8 +151,7 @@ class HBnBFacade:
             raise ValueError("User not found")
         if not place_obj:
             raise ValueError("Place not found")
-        current_owner_id = getattr(place_obj, 'owner_id',
-                                   None) or place_obj.owner
+        current_owner_id = place_obj.owner_id
         if current_owner_id == user_obj.id:
             raise ValueError("You cannot review your own place!")
 
@@ -155,7 +176,7 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        return [r for r in self.get_all_reviews() if r.place.id == place_id]
+        return [r for r in self.get_all_reviews() if r.place_id == place_id]
 
     def update_review(self, review_id, review_data):
         # logic to update a review
