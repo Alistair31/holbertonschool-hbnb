@@ -36,9 +36,7 @@ class ReviewList(Resource):
         if not place:
             api.abort(404, "Place not found")
 
-        owner_id = place.owner.id if hasattr(place.owner, 'id'
-                                             ) else place.owner
-        if str(owner_id) == str(current_user_id):
+        if str(place.owner_id) == str(current_user_id):
             api.abort(400, "You cannot review your own place")
 
         existing_reviews = facade.get_reviews_by_place(place_id)
