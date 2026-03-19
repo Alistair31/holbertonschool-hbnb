@@ -170,13 +170,19 @@ holbertonschool-hbnb/
 ## Installation
 - Requirements: Python 3.8+
 - Open your preferred Terminal.
-- Clone this repository:
+- First, clone this repository:
 ```bash
 git clone https://github.com/Alistair31/holbertonschool-hbnb.git
 ```
+- Then you can use this command to initialize the app:
+```
+bash setup.sh
+```
+
+If you want to install manually, use those following command:  
 - Navigate to the app directory:
 ```bash
-cd holbertonschool-hbnb/part2/hbnb/app
+cd holbertonschool-hbnb/part3/hbnb/app
 ```
 - Install dependencies:
 ```bash
@@ -194,7 +200,7 @@ The application uses the `unittest` framework to validate all objects, APIs, and
 
 - **Run all tests**:
 ```bash
-cd part2/hbnb/
+cd part3/hbnb/
 python3 -m unittest discover tests
 ```
 
