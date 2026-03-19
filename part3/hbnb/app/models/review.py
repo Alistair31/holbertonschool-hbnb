@@ -20,28 +20,22 @@ class Review(BaseModel):
     )
 
     place = db.relationship('Place', back_populates='reviews')
-    user = db.relationship('User')
+    user = db.relationship('User', foreign_keys=[user_id])
 
     def __init__(self, text: str, rating: int, place_id: Place, user_id: User):
         super().__init__()
 
+        if not text or not isinstance(text, str):
+            raise ValueError("Text must be a non-empty string")
+        if not isinstance(rating, int) or not (1 <= rating <= 5):
+            raise ValueError("Rating must be an integer between 1 and 5")
         if not isinstance(place_id, Place):
-            raise ValueError("Place must be an instance of Place")
-        if not self.verification_place(place_id):
-            raise ValueError("Place does not exist")
+            raise ValueError("place must be a valid instance of Place")
         if not isinstance(user_id, User):
-            raise ValueError("User must be an instance of User")
-        if not self.verification_user(user_id):
-            raise ValueError("User does not exist")
-        if not isinstance(rating, int):
-            raise ValueError("Rating must be an integer")
-        if rating < 1 or rating > 5:
-            raise ValueError("Rating must be between 1 and 5")
-        if not isinstance(text, str):
-            raise ValueError("Text must be a string")
-        if not text:
-            raise ValueError("Text cannot be empty")
+            raise ValueError("user must be a valid instance of User")
 
+        self.text: str = text
+        self.rating: int = rating
         if hasattr(place_id, 'id'):
             self.place_id = place_id.id
         else:
@@ -50,9 +44,6 @@ class Review(BaseModel):
             self.user_id = user_id.id
         else:
             self.user_id = user_id
-
-        self.text: str = text
-        self.rating: int = rating
 
     @staticmethod
     def verification_place(place: Place | None) -> bool:

@@ -5,7 +5,7 @@ from app import db
 class Amenity(BaseModel):
     __tablename__ = 'amenities'
 
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, unique=True)
     places = db.relationship('Place', secondary='place_amenity',
                              back_populates='amenities')
 

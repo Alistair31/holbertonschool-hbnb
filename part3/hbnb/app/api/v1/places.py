@@ -5,7 +5,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 api = Namespace('places', description='Place operations')
 
-# Define the models for related entities
 amenity_model = api.model('PlaceAmenity', {
     'id': fields.String(description='Amenity ID'),
     'name': fields.String(description='Name of the amenity')
@@ -18,7 +17,6 @@ user_model = api.model('PlaceUser', {
     'email': fields.String(description='Email of the owner')
 })
 
-# Define the place model for input validation and documentation
 place_model = api.model('Place', {
     'title': fields.String(required=True,
                            description='Title of the place'),
@@ -46,14 +44,11 @@ class PlaceList(Resource):
     def post(self):
         """Register a new place"""
         place_data = api.payload
-
         current_user_id = get_jwt_identity()
-
         place_data['owner_id'] = current_user_id
 
         try:
             new_place = facade.create_place(place_data)
-
             return {
                 'id': new_place.id,
                 'title': new_place.title,
@@ -64,7 +59,6 @@ class PlaceList(Resource):
                 'owner_id': new_place.owner_id,
                 'amenities': [a.id for a in new_place.amenities]
             }, 201
-
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
 
@@ -117,7 +111,6 @@ class PlaceResource(Resource):
         try:
             place_data = api.payload
             updated_place = facade.update_place(place_id, place_data)
-
             return {
                 'id': updated_place.id,
                 'title': updated_place.title,
@@ -127,7 +120,6 @@ class PlaceResource(Resource):
                 'amenities': [a.id if hasattr(
                     a, 'id') else a for a in updated_place.amenities]
             }, 200
-
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
 
