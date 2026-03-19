@@ -35,6 +35,18 @@ class ReviewList(Resource):
         if not place:
             api.abort(404, "Place not found")
 
+        if str(place.owner_id) == str(current_user_id):
+            api.abort(400, "You cannot review your own place")
+
+        existing_reviews = facade.get_reviews_by_place(place_id)
+        if any(str(r.user.id if hasattr(r.user,
+                                        'id') else r.user_id) == str(
+                                            current_user_id
+                                            ) for r in existing_reviews):
+            api.abort(400, "You have already reviewed this place")
+
+        review_data['user_id'] = current_user_id
+
         try:
             new_review = facade.create_review(review_data)
             return {
@@ -46,7 +58,6 @@ class ReviewList(Resource):
             }, 201
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
-
 
     def get(self):
         """Retrieve a list of all reviews"""
@@ -80,7 +91,7 @@ class ReviewResource(Resource):
         """Delete a review"""
         current_user_id = get_jwt_identity()
         claims = get_jwt()
-        
+
         review = facade.get_review(review_id)
         if not review:
             api.abort(404, 'Review not found')
