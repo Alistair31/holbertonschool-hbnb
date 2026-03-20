@@ -12,7 +12,15 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JWT_SECRET_KEY = 'test-secret-key-super-longue-de-32-bytes'
+
+
 config = {
     'development': DevelopmentConfig,
+    'testing': TestingConfig,
     'default': DevelopmentConfig
 }

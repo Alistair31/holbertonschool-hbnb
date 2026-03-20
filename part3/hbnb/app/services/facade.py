@@ -76,22 +76,20 @@ class HBnBFacade:
         return True
 
     def create_place(self, place_data):
-        from app.models.place import Place
+            from app.models.place import Place
 
-        owner_id = place_data.pop('owner_id', None)
-        amenity_ids = place_data.pop('amenities', [])
 
-        place_data['owner_id'] = owner_id
+            amenity_ids = place_data.pop('amenities', [])
 
-        new_place = Place(**place_data)
+            new_place = Place(**place_data)
 
-        for a_id in amenity_ids:
-            amenity = self.get_amenity(a_id)
-            if amenity:
-                new_place.amenities.append(amenity)
+            for a_id in amenity_ids:
+                amenity = self.get_amenity(a_id)
+                if amenity:
+                    new_place.add_amenity(amenity)
 
-        self.place_repo.add(new_place)
-        return new_place
+            self.place_repo.add(new_place)
+            return new_place
 
     def get_place(self, place_id):
         return self.place_repo.get(place_id)
