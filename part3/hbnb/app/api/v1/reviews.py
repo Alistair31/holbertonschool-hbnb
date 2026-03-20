@@ -83,6 +83,36 @@ class ReviewResource(Resource):
             'place_id': review.place_id
         }, 200
 
+    @api.expect(review_update_model, validate=True)
+    @api.response(200, 'Review successfully updated')
+    @api.response(404, 'Review not found')
+    @api.response(403, 'Unauthorized action')
+    @api.response(400, 'Invalid input data')
+    @jwt_required()
+    def put(self, review_id):
+        """Update a review"""
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+
+        review = facade.get_review(review_id)
+        if not review:
+            api.abort(404, 'Review not found')
+
+        if not claims.get('is_admin') and str(review.user_id) != str(current_user_id):
+            api.abort(403, "Unauthorized action")
+
+        try:
+            updated_review = facade.update_review(review_id, api.payload)
+            return {
+                'id': updated_review.id,
+                'text': updated_review.text,
+                'rating': updated_review.rating,
+                'user_id': updated_review.user_id,
+                'place_id': updated_review.place_id
+            }, 200
+        except (ValueError, TypeError) as e:
+            api.abort(400, str(e))
+
     @jwt_required()
     def delete(self, review_id):
         """Delete a review"""
