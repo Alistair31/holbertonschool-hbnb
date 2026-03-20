@@ -30,8 +30,11 @@ class User(BaseModel):
         self.first_name: str = first_name
         self.last_name: str = last_name
         self.email: str = email
-        self.password: str = password
         self.is_admin: bool = is_admin
+        if password:
+            self.hash_password(password)
+        else:
+            self.password = None
 
     @staticmethod
     def is_valid_email(email):
@@ -70,3 +73,13 @@ class User(BaseModel):
         self.user_repo.update(user_id, user_data)
 
         return user
+
+    def hash_password(self, password):
+        from app import bcrypt
+        """Hashes the password before storing it."""
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    def verify_password(self, password):
+        from app import bcrypt
+        """Verifies if the provided password matches the hashed password."""
+        return bcrypt.check_password_hash(self.password, password)
