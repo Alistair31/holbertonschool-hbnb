@@ -57,7 +57,7 @@ class PlaceList(Resource):
                 'latitude': new_place.latitude,
                 'longitude': new_place.longitude,
                 'owner_id': new_place.owner_id,
-                'amenities': [a.id for a in new_place.amenities]
+                'amenities': [{'name': a.name} for a in new_place.amenities]
             }, 201
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
@@ -70,7 +70,7 @@ class PlaceList(Resource):
                  'description': place.description, 'price': place.price,
                  'latitude': place.latitude, 'longitude': place.longitude,
                  'owner_id': place.owner_id,
-                 'amenities': [a.id for a in place.amenities]}
+                 'amenities': [{'name': a.name} for a in place.amenities]}
                 for place in places], 200
 
 
@@ -87,7 +87,7 @@ class PlaceResource(Resource):
                 'description': place.description, 'price': place.price,
                 'latitude': place.latitude, 'longitude': place.longitude,
                 'owner_id': place.owner_id,
-                'amenities': [a.id for a in place.amenities]}, 200
+                'amenities': [{'name': a.name} for a in place.amenities]}, 200
 
     @api.expect(place_model, validate=True)
     @api.response(200, 'Place updated successfully')
@@ -117,8 +117,7 @@ class PlaceResource(Resource):
                 'description': updated_place.description,
                 'price': updated_place.price,
                 'owner_id': updated_place.owner_id,
-                'amenities': [a.id if hasattr(
-                    a, 'id') else a for a in updated_place.amenities]
+                'amenities': [{'name': a.name} for a in updated_place.amenities]
             }, 200
         except (ValueError, TypeError) as e:
             api.abort(400, str(e))
