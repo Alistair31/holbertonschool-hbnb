@@ -36,6 +36,10 @@ class Place(BaseModel):
 
         self.validate()
 
+    def add_amenity(self, amenity):
+        if amenity not in self.amenities:
+            self.amenities.append(amenity)
+
     def validate(self):
         if not self.title or len(self.title.strip()) == 0:
             raise ValueError("Title cannot be empty")

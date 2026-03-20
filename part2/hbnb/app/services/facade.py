@@ -24,6 +24,9 @@ class HBnBFacade:
     def get_users(self):
         return self.user_repo.get_all()
 
+    def delete_user(self, user_id):
+        self.user_repo.delete(user_id)
+
     def update_user(self, user_id, user_data):
         user = self.user_repo.get(user_id)
         if not user:

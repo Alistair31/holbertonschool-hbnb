@@ -39,10 +39,7 @@ class ReviewList(Resource):
             api.abort(400, "You cannot review your own place")
 
         existing_reviews = facade.get_reviews_by_place(place_id)
-        if any(str(r.user.id if hasattr(r.user,
-                                        'id') else r.user_id) == str(
-                                            current_user_id
-                                            ) for r in existing_reviews):
+        if any(str(r.user_id) == str(current_user_id) for r in existing_reviews):
             api.abort(400, "You have already reviewed this place")
 
         review_data['user_id'] = current_user_id
