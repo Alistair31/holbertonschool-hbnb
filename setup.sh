@@ -1,12 +1,24 @@
 #!/bin/bash
 set -e
 
+# Install required system packages
+PACKAGES_TO_INSTALL=""
+python3 -c "import ensurepip" > /dev/null 2>&1 || PACKAGES_TO_INSTALL="$PACKAGES_TO_INSTALL python3.12-venv"
+command -v sqlite3 > /dev/null 2>&1 || PACKAGES_TO_INSTALL="$PACKAGES_TO_INSTALL sqlite3"
+
+if [ -n "$PACKAGES_TO_INSTALL" ]; then
+    echo "Installing system dependencies:$PACKAGES_TO_INSTALL"
+    sudo apt update -qq
+    sudo apt install -y $PACKAGES_TO_INSTALL
+fi
+
 # Move to the correct folder
 cd "$(dirname "$0")/part3/hbnb"
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
+# Create virtual environment if it doesn't exist or is broken
+if [ ! -f "venv/bin/activate" ]; then
     echo "Creating virtual environment..."
+    rm -rf venv
     python3 -m venv venv
 fi
 
