@@ -3,6 +3,7 @@ from flask_restx import Api
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 
 db = SQLAlchemy()
@@ -23,9 +24,13 @@ def create_app(config_class="app.config.DevelopmentConfig"):
     app.config.from_object(config_class)
     app.config['JSON_AS_ASCII'] = False
 
+    CORS(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
+
+    from app.views import views
+    app.register_blueprint(views)
 
     from app.api.v1.users import api as users_ns
     from app.api.v1.amenities import api as amenities_ns

@@ -21,7 +21,7 @@ class User(BaseModel):
 
         if not isinstance(email, str) or not validators.email(email):
             raise ValueError("invalid email format.")
-        
+
         self.first_name = first_name
         self.last_name = last_name
         self.email = email

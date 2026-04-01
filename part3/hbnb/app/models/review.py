@@ -14,7 +14,6 @@ class Review(BaseModel):
     def __init__(self, text: str, rating: int, place_id, user_id, **kwargs):
         super().__init__(**kwargs)
 
-
         p_id = place_id.id if hasattr(place_id, 'id') else place_id
         u_id = user_id.id if hasattr(user_id, 'id') else user_id
 

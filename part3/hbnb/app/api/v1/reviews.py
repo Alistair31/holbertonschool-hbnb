@@ -101,3 +101,29 @@ class ReviewResource(Resource):
 
         facade.delete_review(review_id)
         return '', 204
+
+    @api.expect(review_update_model)
+    def put(self, review_id):
+        """Update a review"""
+        review_data = api.payload
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+
+        review = facade.get_review(review_id)
+        if not review:
+            api.abort(404, 'Review not found')
+
+        if not claims.get('is_admin') and str(review.user_id) != str(current_user_id):
+            api.abort(403, "Unauthorized action")
+
+        try:
+            updated_review = facade.update_review(review_id, review_data)
+            return {
+                'id': updated_review.id,
+                'text': updated_review.text,
+                'rating': updated_review.rating,
+                'user_id': updated_review.user_id,
+                'place_id': updated_review.place_id
+            }, 200
+        except (ValueError, TypeError) as e:
+            api.abort(400, str(e))
