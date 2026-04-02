@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="icon" href="/static/images/icon.png" type="image/png">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main role="main" id="main-content">
+        <form id="register-form" class="form" novalidate>
+            <h2>Create an Account</h2>
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" required aria-required="true">
+
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" required aria-required="true">
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required aria-required="true">
+
+            <label for="password">Password (min. 6 characters):</label>
+            <input type="password" id="password" name="password" required aria-required="true" minlength="6" aria-describedby="password-hint">
+            <span id="password-hint" class="field-hint">Minimum 6 characters</span>
+
+            <button type="submit">Register</button>
+            <p>Already have an account? <a href="/login">Login</a></p>
+        </form>
+    </main>
+    {% include 'footer.html' %}
+    <script src="/static/scripts.js"></script>
+</body>
+</html>

@@ -6,8 +6,10 @@ class Amenity(BaseModel):
     __tablename__ = 'amenities'
 
     name = db.Column(db.String(100), nullable=False)
+    icon = db.Column(db.String(10), nullable=True, default='🏠')
+    icon_url = db.Column(db.String(255), nullable=True)
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, icon: str = '🏠', **kwargs):
 
         super().__init__(**kwargs)
 
@@ -15,6 +17,7 @@ class Amenity(BaseModel):
             raise ValueError("Name must be a non-empty string")
 
         self.name = name
+        self.icon = icon
 
     @staticmethod
     def verification_name(name: str) -> bool:

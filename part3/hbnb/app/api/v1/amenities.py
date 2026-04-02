@@ -5,7 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt
 api = Namespace('amenities', description='Amenity operations')
 
 amenity_model = api.model('Amenity', {
-    'name': fields.String(required=True, description='Name of the amenity')
+    'name': fields.String(required=True, description='Name of the amenity'),
+    'icon': fields.String(description='Emoji icon for the amenity')
 })
 
 
@@ -36,8 +37,15 @@ class AmenityList(Resource):
     def get(self):
         """Retrieve a list of all amenities"""
         amenities = facade.get_all_amenities()
-        return [{'id': amenity.id, 'name': amenity.name}
-                for amenity in amenities], 200
+        return [
+            {
+                'id': amenity.id,
+                'name': amenity.name,
+                'icon': amenity.icon or '🏠',
+                'icon_url': amenity.icon_url
+            }
+            for amenity in amenities
+        ], 200
 
 
 @api.route('/<amenity_id>')
@@ -49,7 +57,12 @@ class AmenityResource(Resource):
         amenity = facade.get_amenity(amenity_id)
         if not amenity:
             return {'error': 'Amenity not found'}, 404
-        return {'id': amenity.id, 'name': amenity.name}, 200
+        return {
+            'id': amenity.id,
+            'name': amenity.name,
+            'icon': amenity.icon or '🏠',
+            'icon_url': amenity.icon_url
+        }, 200
 
     @api.expect(amenity_model, validate=True)
     @jwt_required()

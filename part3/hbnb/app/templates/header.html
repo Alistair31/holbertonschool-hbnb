@@ -1,4 +1,12 @@
-<header>
-	<img class="logo" src="/static/images/logo.png">
-	<a class="login-button" id="login-link" href="/login">login</a>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header role="banner">
+	<img class="logo" src="/static/images/logo.png" alt="HBnB logo">
+	<nav aria-label="Main navigation">
+		<a href="/index">Home</a>
+	</nav>
+	<div class="header-actions">
+		<a class="login-button" id="login-link" href="/login">Login</a>
+		<a class="register-button" id="register-link" href="/register">Register</a>
+		<button class="logout-button" id="logout-btn" style="display:none;" aria-label="Logout">Logout</button>
+	</div>
 </header>

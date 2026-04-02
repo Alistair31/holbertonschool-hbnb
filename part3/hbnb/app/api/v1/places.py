@@ -70,7 +70,11 @@ class PlaceList(Resource):
                  'description': place.description, 'price': place.price,
                  'latitude': place.latitude, 'longitude': place.longitude,
                  'owner_id': place.owner_id,
-                 'amenities': [a.id for a in place.amenities]}
+                 'amenities': [a.id for a in place.amenities],
+                 'image_url': next(
+                     (img.image_url for img in place.images
+                      if img.is_primary), None
+                 )}
                 for place in places], 200
 
 
@@ -83,11 +87,27 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'error': 'Place not found'}, 404
+        owner = facade.get_user_by_id(place.owner_id)
+        host_name = (
+            f"{owner.first_name} {owner.last_name}" if owner else "Unknown"
+        )
         return {'id': place.id, 'title': place.title,
                 'description': place.description, 'price': place.price,
                 'latitude': place.latitude, 'longitude': place.longitude,
                 'owner_id': place.owner_id,
-                'amenities': [a.id for a in place.amenities]}, 200
+                'host': host_name,
+                'image_url': next(
+                    (img.image_url for img in place.images
+                     if img.is_primary), None
+                ),
+                'amenities': [
+                    {
+                        'name': a.name,
+                        'icon': a.icon or '🏠',
+                        'icon_url': a.icon_url
+                    }
+                    for a in place.amenities
+                ]}, 200
 
     @api.expect(place_model, validate=True)
     @api.response(200, 'Place updated successfully')

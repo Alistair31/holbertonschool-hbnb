@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS places (
     latitude    FLOAT        NOT NULL,
     longitude   FLOAT        NOT NULL,
     owner_id    CHAR(36)     NOT NULL,
+    image_url   VARCHAR(255),
     created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
@@ -41,6 +42,8 @@ CREATE TABLE IF NOT EXISTS places (
 CREATE TABLE IF NOT EXISTS amenities (
     id         CHAR(36)     PRIMARY KEY,
     name       VARCHAR(100) NOT NULL UNIQUE,
+    icon       VARCHAR(10)  DEFAULT '🏠',
+    icon_url   VARCHAR(255),
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -59,6 +62,19 @@ CREATE TABLE IF NOT EXISTS reviews (
     FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
     FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE,
     UNIQUE (user_id, place_id)
+);
+
+-- -------------------------------------------------------------
+-- Table: place_images
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS place_images (
+    id         CHAR(36)     PRIMARY KEY,
+    place_id   CHAR(36)     NOT NULL,
+    image_url  VARCHAR(255) NOT NULL,
+    is_primary BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE
 );
 
 -- -------------------------------------------------------------
@@ -90,8 +106,8 @@ VALUES (
 );
 
 -- Initial amenities
-INSERT OR IGNORE INTO amenities (id, name, created_at, updated_at)
+INSERT OR IGNORE INTO amenities (id, name, icon, created_at, updated_at)
 VALUES
-    ('eb40c852-327d-4f05-b695-ce57c9ad9940', 'WiFi',           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('16b54b85-efc9-4932-93b0-87ed5d5fb812', 'Swimming Pool',  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('9841a170-da50-4e72-8741-175ae737441f', 'Air Conditioning',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    ('eb40c852-327d-4f05-b695-ce57c9ad9940', 'WiFi',            '📶', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('16b54b85-efc9-4932-93b0-87ed5d5fb812', 'Swimming Pool',   '🏊', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('9841a170-da50-4e72-8741-175ae737441f', 'Air Conditioning', '❄️', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

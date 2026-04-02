@@ -32,6 +32,8 @@ def create_app(config_class="app.config.DevelopmentConfig"):
     from app.views import views
     app.register_blueprint(views)
 
+    from app.models.place_image import PlaceImage  # noqa: F401
+
     from app.api.v1.users import api as users_ns
     from app.api.v1.amenities import api as amenities_ns
     from app.api.v1.places import api as places_ns

@@ -4,26 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>List of Places</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="/static/images/icon.png" type="image/png">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     {% include 'header.html' %}
-    <main>
-        <section id="filter">
-            <label for="price-filter">Max Price:</label>
-            <select id="price-filter">
-                <option value="">No Filter</option>
-				<option value="10">$10</option>
-				<option value="50">$50</option>
-				<option value="100">$100</option>
-				<option value="all">All</option>
-            </select>
-        </section>
-        <section id="places-list">
+    <main role="main" id="main-content">
+        <div class="places-toolbar">
+            <div class="toolbar-actions">
+                <a id="create-place-btn" href="/create_place" style="display:none;" aria-label="Create a new place">+ Create Place</a>
+                <button id="add-amenity-btn" style="display:none;" aria-label="Add a new amenity">+ Add Amenity</button>
+            </div>
+            <section id="filter" aria-label="Filter places by price">
+                <label for="price-filter">Max Price:</label>
+                <select id="price-filter" aria-label="Filter places by maximum price">
+                    <option value="">No Filter</option>
+                    <option value="10">$10</option>
+                    <option value="50">$50</option>
+                    <option value="100">$100</option>
+                    <option value="all">All</option>
+                </select>
+            </section>
+        </div>
+        <section id="places-list" aria-label="List of places" aria-live="polite">
             <!-- List of places will be populated dynamically -->
         </section>
     </main>
+    <div id="amenity-modal" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="amenity-modal-title">
+        <div class="modal-content">
+            <h3 id="amenity-modal-title">Add Amenity</h3>
+            <form id="amenity-form" novalidate>
+                <label for="amenity-name">Name:</label>
+                <input type="text" id="amenity-name" name="name" required aria-required="true">
+                <label for="amenity-icon">Icon (emoji):</label>
+                <input type="text" id="amenity-icon" name="icon" placeholder="🏠" maxlength="4" aria-label="Emoji icon for the amenity">
+                <label for="amenity-icon-file">Or upload a logo image:</label>
+                <input type="file" id="amenity-icon-file" accept="image/*" aria-label="Upload a logo image for the amenity">
+                <img id="amenity-icon-preview" src="" alt="Preview of uploaded amenity icon" style="display:none; max-height:48px; margin-top:0.3rem; border-radius:6px;">
+                <div class="modal-buttons">
+                    <button type="submit">Create</button>
+                    <button type="button" id="amenity-modal-close" aria-label="Cancel and close modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 	{% include 'footer.html' %}
-    <script src="scripts.js"></script>
+    <script src="/static/scripts.js"></script>
 </body>
 </html>

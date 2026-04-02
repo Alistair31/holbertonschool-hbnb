@@ -89,7 +89,7 @@ class HBnBFacade:
             for a_id in amenity_ids:
                 amenity = self.get_amenity(a_id)
                 if amenity:
-                    new_place.add_amenity(amenity)
+                    new_place.amenities.append(amenity)
 
             self.place_repo.add(new_place)
             return new_place

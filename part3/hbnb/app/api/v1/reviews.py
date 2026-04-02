@@ -39,10 +39,7 @@ class ReviewList(Resource):
             api.abort(400, "You cannot review your own place")
 
         existing_reviews = facade.get_reviews_by_place(place_id)
-        if any(str(r.user.id if hasattr(r.user,
-                                        'id') else r.user_id) == str(
-                                            current_user_id
-                                            ) for r in existing_reviews):
+        if any(str(r.user_id) == str(current_user_id) for r in existing_reviews):
             api.abort(400, "You have already reviewed this place")
 
         review_data['user_id'] = current_user_id
@@ -62,13 +59,19 @@ class ReviewList(Resource):
     def get(self):
         """Retrieve a list of all reviews"""
         reviews = facade.get_all_reviews()
-        return [{
-            'id': r.id,
-            'text': r.text,
-            'rating': r.rating,
-            'user_id': r.user_id,
-            'place_id': r.place_id
-        } for r in reviews], 200
+        result = []
+        for r in reviews:
+            user = facade.get_user_by_id(r.user_id)
+            user_name = f"{user.first_name} {user.last_name}" if user else "Unknown"
+            result.append({
+                'id': r.id,
+                'text': r.text,
+                'rating': r.rating,
+                'user_id': r.user_id,
+                'user_name': user_name,
+                'place_id': r.place_id
+            })
+        return result, 200
 
 
 @api.route('/<review_id>')

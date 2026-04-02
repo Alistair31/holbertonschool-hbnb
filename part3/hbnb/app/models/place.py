@@ -19,9 +19,18 @@ class Place(BaseModel):
     longitude = db.Column(db.Float, nullable=False)
 
     owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)
 
-    reviews = db.relationship('Review', backref='place', lazy=True, cascade="all, delete-orphan")
-    amenities = db.relationship('Amenity', secondary=place_amenity, backref='places')
+    reviews = db.relationship(
+        'Review', backref='place', lazy=True, cascade="all, delete-orphan"
+    )
+    amenities = db.relationship(
+        'Amenity', secondary=place_amenity, backref='places'
+    )
+    images = db.relationship(
+        'PlaceImage', backref='place', lazy=True,
+        cascade="all, delete-orphan"
+    )
 
     def __init__(self, title: str, description: str, price: float,
                  latitude: float, longitude: float, owner_id: str, **kwargs):
