@@ -271,10 +271,10 @@ function displayPlaces(places, token) {
             <div class="place-card-body">
                 <div class="place-card-header">
                     <h3>${place.title}</h3>
-                    <span class="place-price" aria-label="Price: $${place.price} per night">$${place.price}<small>/night</small></span>
+                    <span class="place-price" aria-label="Price: ${place.price} gold per night">${place.price}<small> gold/night</small></span>
                 </div>
-                <button class="details-button" aria-label="View details for ${place.title}">View Details</button>
-                ${canDelete ? `<button class="delete-button" aria-label="Delete ${place.title}">Delete</button>` : ''}
+                <button class="details-button" aria-label="View details for ${place.title}"><span class="btn-icon"><img src="/static/images/view_details.jpg" alt=""></span>View Details</button>
+                ${canDelete ? `<button class="delete-button" aria-label="Delete ${place.title}"><span class="btn-icon"><img src="/static/images/delete.jpg" alt=""></span>Delete</button>` : ''}
             </div>
         `;
         placeElement.querySelector('.details-button').addEventListener('click', () => {
@@ -387,7 +387,7 @@ function displayPlaceDetails(place) {
 	placeDetails.innerHTML = `
 		<div class="place-card-header">
 			<h2>${place.title}</h2>
-			<span class="place-price">$${place.price}<small>/night</small></span>
+			<span class="place-price">${place.price}<small> gold/night</small></span>
 		</div>
 		${galleryHtml}
 		<p><strong>Host:</strong> ${place.host || 'Unknown'}</p>

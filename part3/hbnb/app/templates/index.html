@@ -12,8 +12,8 @@
     <main role="main" id="main-content">
         <div class="places-toolbar">
             <div class="toolbar-actions">
-                <a id="create-place-btn" href="/create_place" style="display:none;" aria-label="Create a new place">+ Create Place</a>
-                <button id="add-amenity-btn" style="display:none;" aria-label="Add a new amenity">+ Add Amenity</button>
+                <a id="create-place-btn" href="/create_place" style="display:none;" aria-label="Create a new place"><span class="btn-icon"><img src="/static/images/create_place.jpg" alt=""></span>Create Place</a>
+                <button id="add-amenity-btn" style="display:none;" aria-label="Add a new amenity"><span class="btn-icon"><img src="/static/images/add_amenities.jpg" alt=""></span>Add Amenity</button>
             </div>
             <section id="filter" aria-label="Filter places by price">
                 <label for="price-filter">Max Price:</label>
@@ -42,8 +42,8 @@
                 <input type="file" id="amenity-icon-file" accept="image/*" aria-label="Upload a logo image for the amenity">
                 <img id="amenity-icon-preview" src="" alt="Preview of uploaded amenity icon" style="display:none; max-height:48px; margin-top:0.3rem; border-radius:6px;">
                 <div class="modal-buttons">
-                    <button type="submit">Create</button>
-                    <button type="button" id="amenity-modal-close" aria-label="Cancel and close modal">Cancel</button>
+                    <button type="submit"><span class="btn-icon"><img src="/static/images/icon.png" alt=""></span>Create</button>
+                    <button type="button" id="amenity-modal-close" aria-label="Cancel and close modal"><span class="btn-icon"><img src="/static/images/icon.png" alt=""></span>Cancel</button>
                 </div>
             </form>
         </div>
